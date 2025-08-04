@@ -38,10 +38,7 @@ function App() {
         />
       )}
       
-      <div className="info-overlay">
-        <h1>WebGL Fire Ember Particles</h1>
-        <p>Click to spawn particles • Move mouse to interact</p>
-      </div>
+
     </div>
   );
 }
