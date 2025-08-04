@@ -1,0 +1,234 @@
+import { Particle } from './Particle.js';
+import { PerlinNoise } from './PerlinNoise.js';
+
+export class ParticleManager {
+  constructor(settings) {
+    this.particles = [];
+    this.settings = settings;
+    this.perlinNoise = new PerlinNoise(settings);
+    
+    this.lastSpawnTime = 0;
+    this.timeAccumulator = 0;
+    
+    // Canvas dimensions for boundary checking
+    this.canvasWidth = 800;
+    this.canvasHeight = 600;
+  }
+
+  update(deltaTime, currentTime) {
+    this.timeAccumulator += deltaTime;
+    
+    // Spawn new particles based on spawn rate
+    this.spawnParticles(deltaTime);
+    
+    // Update existing particles
+    this.updateParticles(deltaTime);
+    
+    // Clean up dead particles
+    this.cleanupParticles();
+    
+    // Spawn child particles
+    this.spawnChildParticles();
+  }
+
+  spawnParticles(deltaTime) {
+    const spawnInterval = 1.0 / this.settings.particles.spawnRate;
+    
+    while (this.timeAccumulator >= spawnInterval && 
+           this.particles.length < this.settings.particles.maxCount) {
+      
+      this.spawnRandomParticle();
+      this.timeAccumulator -= spawnInterval;
+    }
+  }
+
+  spawnRandomParticle() {
+    const spawnArea = this.settings.particles.spawnArea;
+    
+    // Random position in spawn area
+    const x = this.canvasWidth * (spawnArea.x.min + 
+              Math.random() * (spawnArea.x.max - spawnArea.x.min));
+    const y = this.canvasHeight * (spawnArea.y.min + 
+              Math.random() * (spawnArea.y.max - spawnArea.y.min));
+    
+    const particle = new Particle(x, y, this.settings);
+    this.particles.push(particle);
+    
+    return particle;
+  }
+
+  spawnParticleAt(x, y, count = 1) {
+    const spawned = [];
+    
+    for (let i = 0; i < count && this.particles.length < this.settings.particles.maxCount; i++) {
+      // Add some randomness around the spawn point
+      const offsetX = (Math.random() - 0.5) * 20;
+      const offsetY = (Math.random() - 0.5) * 20;
+      
+      const particle = new Particle(x + offsetX, y + offsetY, this.settings);
+      
+      // Give clicked particles a bit more initial upward velocity
+      particle.vy -= 0.3;
+      
+      this.particles.push(particle);
+      spawned.push(particle);
+    }
+    
+    return spawned;
+  }
+
+  updateParticles(deltaTime) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const particle = this.particles[i];
+      
+      if (particle.update(deltaTime, this.settings, this.perlinNoise) === null) {
+        // Particle died during update
+        this.particles.splice(i, 1);
+        continue;
+      }
+      
+      // Remove particles that are way off screen
+      if (!particle.isOnScreen(this.canvasWidth, this.canvasHeight, 200)) {
+        this.particles.splice(i, 1);
+      }
+    }
+  }
+
+  cleanupParticles() {
+    this.particles = this.particles.filter(particle => !particle.isDead());
+  }
+
+  spawnChildParticles() {
+    const newParticles = [];
+    
+    for (const particle of this.particles) {
+      const child = particle.spawnChild(this.settings);
+      if (child && this.particles.length + newParticles.length < this.settings.particles.maxCount) {
+        newParticles.push(child);
+      }
+    }
+    
+    this.particles.push(...newParticles);
+  }
+
+  applyMouseForce(mouseX, mouseY, forceSettings) {
+    const { strength, radius, falloffCurve } = forceSettings;
+    
+    for (const particle of this.particles) {
+      const dx = particle.x - mouseX;
+      const dy = particle.y - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < radius && distance > 0) {
+        // Calculate force magnitude with falloff
+        const normalizedDistance = distance / radius;
+        const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+        const forceMagnitude = strength * falloff;
+        
+        // Apply radial force (push away from mouse)
+        const forceX = (dx / distance) * forceMagnitude;
+        const forceY = (dy / distance) * forceMagnitude;
+        
+        particle.applyForce(forceX * 0.01, forceY * 0.01); // Scale down force
+      }
+    }
+  }
+
+  // Handle different force types
+  applyForce(mouseX, mouseY, forceType, forceSettings) {
+    switch (forceType) {
+      case 'radial':
+        this.applyMouseForce(mouseX, mouseY, forceSettings);
+        break;
+      case 'suction':
+        this.applySuctionForce(mouseX, mouseY, forceSettings);
+        break;
+      case 'directional':
+        this.applyDirectionalForce(mouseX, mouseY, forceSettings);
+        break;
+    }
+  }
+
+  applySuctionForce(mouseX, mouseY, forceSettings) {
+    const { strength, radius, falloffCurve } = forceSettings;
+    
+    for (const particle of this.particles) {
+      const dx = mouseX - particle.x;
+      const dy = mouseY - particle.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < radius && distance > 0) {
+        const normalizedDistance = distance / radius;
+        const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+        const forceMagnitude = strength * falloff;
+        
+        // Apply attractive force (pull toward mouse)
+        const forceX = (dx / distance) * forceMagnitude;
+        const forceY = (dy / distance) * forceMagnitude;
+        
+        particle.applyForce(forceX * 0.01, forceY * 0.01);
+      }
+    }
+  }
+
+  applyDirectionalForce(mouseX, mouseY, forceSettings) {
+    // Apply force in a consistent direction from mouse position
+    // This could be modified to use mouse movement direction
+    const { strength, radius } = forceSettings;
+    const forceDirection = { x: 1, y: 0 }; // Default rightward force
+    
+    for (const particle of this.particles) {
+      const dx = particle.x - mouseX;
+      const dy = particle.y - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < radius) {
+        particle.applyForce(
+          forceDirection.x * strength * 0.01,
+          forceDirection.y * strength * 0.01
+        );
+      }
+    }
+  }
+
+  updateSettings(newSettings) {
+    this.settings = newSettings;
+    this.perlinNoise.updateSettings(newSettings);
+  }
+
+  setCanvasSize(width, height) {
+    this.canvasWidth = width;
+    this.canvasHeight = height;
+  }
+
+  getParticles() {
+    return this.particles;
+  }
+
+  getParticleCount() {
+    return this.particles.length;
+  }
+
+  clear() {
+    this.particles = [];
+  }
+
+  // Debug methods
+  getDebugInfo() {
+    return {
+      particleCount: this.particles.length,
+      maxParticles: this.settings.particles.maxCount,
+      spawnRate: this.settings.particles.spawnRate,
+      timeAccumulator: this.timeAccumulator.toFixed(3)
+    };
+  }
+
+  getNoiseVisualization(resolution = 20) {
+    return this.perlinNoise.getNoiseGrid(
+      this.canvasWidth, 
+      this.canvasHeight, 
+      this.timeAccumulator, 
+      resolution
+    );
+  }
+}
