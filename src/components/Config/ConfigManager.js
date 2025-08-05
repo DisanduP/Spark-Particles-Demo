@@ -13,6 +13,9 @@ export class ConfigManager {
 
   // Update a nested setting path
   updateSetting(path, value) {
+    // Create a deep copy of settings to avoid mutation
+    this.settings = JSON.parse(JSON.stringify(this.settings));
+    
     const keys = path.split('.');
     let current = this.settings;
     
