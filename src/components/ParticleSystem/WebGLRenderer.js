@@ -56,6 +56,12 @@ export class WebGLRenderer {
     this.setupBuffers();
   }
 
+  async loadShadersFromFiles(vertexPath, fragmentPath) {
+    const { loadShaderFiles } = await import('../../utils/shaderLoader.js');
+    const { vertexSource, fragmentSource } = await loadShaderFiles(vertexPath, fragmentPath);
+    return this.loadShaders(vertexSource, fragmentSource);
+  }
+
   compileShader(type, source) {
     const gl = this.gl;
     const shader = gl.createShader(type);

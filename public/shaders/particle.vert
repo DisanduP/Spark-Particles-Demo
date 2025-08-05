@@ -7,24 +7,36 @@ attribute float a_maxLife;
 uniform vec2 u_resolution;
 uniform mat3 u_transform;
 
+// For non-instanced fallback
+uniform vec2 u_particlePos;
+uniform float u_particleSize;
+uniform float u_particleLife;
+uniform float u_particleMaxLife;
+
 varying float v_life;
 varying float v_alpha;
 varying vec2 v_uv;
 
 void main() {
+  // Use instanced attributes if available, otherwise use uniforms
+  vec2 particlePos = a_particlePos != vec2(0.0) ? a_particlePos : u_particlePos;
+  float size = a_size != 0.0 ? a_size : u_particleSize;
+  float life = a_life != 0.0 ? a_life : u_particleLife;
+  float maxLife = a_maxLife != 0.0 ? a_maxLife : u_particleMaxLife;
+  
   // Calculate lifecycle alpha
-  v_life = a_life / a_maxLife;
+  v_life = life / maxLife;
   v_alpha = smoothstep(0.0, 0.1, v_life) * (1.0 - smoothstep(0.7, 1.0, v_life));
   
   // UV coordinates for the particle quad
   v_uv = a_position * 0.5 + 0.5;
   
   // Scale the particle based on size and lifecycle
-  float sizeScale = mix(0.3, 1.0, 1.0 - v_life); // Start smaller, grow, then shrink
-  vec2 scaledPos = a_position * a_size * sizeScale;
+  float sizeScale = mix(0.3, 1.0, 1.0 - v_life);
+  vec2 scaledPos = a_position * size * sizeScale;
   
   // Position in world space
-  vec2 worldPos = a_particlePos + scaledPos;
+  vec2 worldPos = particlePos + scaledPos;
   
   // Transform to clip space
   vec3 transformed = u_transform * vec3(worldPos, 1.0);

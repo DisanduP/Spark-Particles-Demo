@@ -14,6 +14,7 @@
 - [x] Mouse interaction system (radial force)
 - [x] Child particle spawning
 - [x] JSON export/import functionality
+- [x] Shader loading from external files
 
 ### Core Features Working
 - [x] Particle rendering with WebGL
@@ -64,7 +65,6 @@ The system supports hundreds to thousands of particles with smooth performance, 
 
 ## 🐛 Known Issues
 
-- Shader loading could be optimized
 - Mobile touch interactions need refinement
 - Performance could be better on older devices
 

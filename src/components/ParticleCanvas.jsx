@@ -3,116 +3,6 @@ import { WebGLRenderer } from './ParticleSystem/WebGLRenderer.js';
 import { ParticleManager } from './ParticleSystem/ParticleManager.js';
 import { ConfigManager } from './Config/ConfigManager.js';
 
-// Shader sources as strings for now (we'll load from files later)
-const vertexShaderSource = `
-attribute vec2 a_position;
-attribute vec2 a_particlePos;
-attribute float a_size;
-attribute float a_life;
-attribute float a_maxLife;
-
-uniform vec2 u_resolution;
-uniform mat3 u_transform;
-
-// For non-instanced fallback
-uniform vec2 u_particlePos;
-uniform float u_particleSize;
-uniform float u_particleLife;
-uniform float u_particleMaxLife;
-
-varying float v_life;
-varying float v_alpha;
-varying vec2 v_uv;
-
-void main() {
-  // Use instanced attributes if available, otherwise use uniforms
-  vec2 particlePos = a_particlePos != vec2(0.0) ? a_particlePos : u_particlePos;
-  float size = a_size != 0.0 ? a_size : u_particleSize;
-  float life = a_life != 0.0 ? a_life : u_particleLife;
-  float maxLife = a_maxLife != 0.0 ? a_maxLife : u_particleMaxLife;
-  
-  // Calculate lifecycle alpha
-  v_life = life / maxLife;
-  v_alpha = smoothstep(0.0, 0.1, v_life) * (1.0 - smoothstep(0.7, 1.0, v_life));
-  
-  // UV coordinates for the particle quad
-  v_uv = a_position * 0.5 + 0.5;
-  
-  // Scale the particle based on size and lifecycle
-  float sizeScale = mix(0.3, 1.0, 1.0 - v_life);
-  vec2 scaledPos = a_position * size * sizeScale;
-  
-  // Position in world space
-  vec2 worldPos = particlePos + scaledPos;
-  
-  // Transform to clip space
-  vec3 transformed = u_transform * vec3(worldPos, 1.0);
-  vec2 clipSpace = ((transformed.xy / u_resolution) * 2.0 - 1.0) * vec2(1, -1);
-  
-  gl_Position = vec4(clipSpace, 0.0, 1.0);
-}
-`;
-
-// Fragment shader with texture support - using string concatenation to avoid parsing issues
-const fragmentShaderSource = [
-  'precision mediump float;',
-  '',
-  'varying float v_life;',
-  'varying float v_alpha;',
-  'varying vec2 v_uv;',
-  '',
-  'uniform vec3 u_color;',
-  'uniform float u_glowIntensity;',
-  'uniform bool u_isDarkMode;',
-  'uniform sampler2D u_texture;',
-  'uniform bool u_useTexture;',
-  '',
-  'float sparkleShape(vec2 uv) {',
-  '  vec2 center = uv - 0.5;',
-  '  float dist = length(center);',
-  '  float angle = atan(center.y, center.x);',
-  '  float rays = abs(sin(angle * 4.0)) * 0.3 + 0.7;',
-  '  float star = smoothstep(0.4 * rays, 0.2 * rays, dist);',
-  '  float glow = exp(-dist * 8.0) * 0.5;',
-  '  return max(star, glow);',
-  '}',
-  '',
-  'void main() {',
-  '  float shape;',
-  '  ',
-  '  if (u_useTexture) {',
-  '    vec4 texColor = texture2D(u_texture, v_uv);',
-  '    // SVG usually has shape in RGB and transparency in alpha',
-  '    // Use alpha if available, otherwise use red channel',
-  '    shape = texColor.a > 0.0 ? texColor.a : (1.0 - texColor.r);',
-  '  } else {',
-  '    shape = sparkleShape(v_uv);',
-  '  }',
-  '  ',
-  '  vec3 hotColor = vec3(1.0, 0.8, 0.2);',
-  '  vec3 warmColor = vec3(1.0, 0.4, 0.1);',
-  '  vec3 coolColor = vec3(0.8, 0.2, 0.0);',
-  '  ',
-  '  vec3 color;',
-  '  if (v_life > 0.7) {',
-  '    color = mix(coolColor, warmColor, (v_life - 0.7) / 0.3);',
-  '  } else {',
-  '    color = mix(warmColor, hotColor, v_life / 0.7);',
-  '  }',
-  '  ',
-  '  if (!u_isDarkMode) {',
-  '    color = color * 0.8 + vec3(0.2);',
-  '  }',
-  '  ',
-  '  color = mix(color, u_color, 0.3);',
-  '  ',
-  '  float finalAlpha = shape * v_alpha;',
-  '  color += vec3(u_glowIntensity * 0.3) * shape;',
-  '  ',
-  '  gl_FragColor = vec4(color, finalAlpha);',
-  '}'
-].join('\n');
-
 export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
   const canvasRef = useRef(null);
   const rendererRef = useRef(null);
@@ -141,17 +31,14 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
       particleManagerRef.current = new ParticleManager(settings);
       rendererRef.current = new WebGLRenderer(canvas);
 
-      // Load shaders
-      await rendererRef.current.loadShaders(vertexShaderSource, fragmentShaderSource);
-
-      // Load SVG texture for particles
-      try {
-        // Use the correct path for Vite dev server - SVG is now in public folder
-        await rendererRef.current.enableSVGTextures('/spark-particles/sparkle.svg');
-        console.log('SVG particle texture loaded successfully');
-      } catch (error) {
-        console.warn('Failed to load SVG texture, using mathematical fallback:', error);
-      }
+      // Load shaders from files
+      const basePath = import.meta.env.BASE_URL;
+      // Ensure basePath ends with / for proper concatenation
+      const normalizedBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+      await rendererRef.current.loadShadersFromFiles(
+        `${normalizedBasePath}shaders/particle.vert`,
+        `${normalizedBasePath}shaders/particle.frag`
+      );
 
       // Set up canvas size
       resizeCanvas();
@@ -335,7 +222,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
         fontFamily: 'monospace',
         pointerEvents: 'none'
       }}>
-        Texture: {rendererRef.current?.useTexture ? 'SVG' : 'Math'} | 
+        Renderer: WebGL | Shaders: Files | 
         Particles: {particleManagerRef.current?.particles?.length || 0}
       </div>
     </div>
