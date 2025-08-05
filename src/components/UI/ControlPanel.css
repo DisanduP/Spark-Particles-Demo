@@ -14,13 +14,59 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-size: 14px;
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateX(0);
+}
+
+.control-panel.hidden {
+  transform: translateX(calc(100% + 20px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .control-panel.dark {
   background: rgba(20, 20, 20, 0.95);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Show tab that appears when panel is hidden */
+.control-tab {
+  position: fixed;
+  top: 20px;
+  right: 10px;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px 0 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: none;
+  z-index: 999;
+  transition: all 0.3s ease;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.control-tab.dark {
+  background: rgba(20, 20, 20, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: none;
+}
+
+.control-tab:hover {
+  transform: translateX(-5px);
+  box-shadow: -6px 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.control-tab span {
+  font-size: 20px;
+  user-select: none;
 }
 
 .control-header {
@@ -58,6 +104,21 @@
 
 .control-panel.dark .control-actions button:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.control-actions .hide-button {
+  font-size: 16px;
+  color: #666;
+  margin-left: 4px;
+}
+
+.control-panel.dark .control-actions .hide-button {
+  color: #ccc;
+}
+
+.control-actions .hide-button:hover {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
 }
 
 .control-sections {
@@ -251,4 +312,16 @@
 
 .control-panel {
   animation: slideIn 0.3s ease-out;
+}
+
+/* Animation for tab sliding in from the right */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

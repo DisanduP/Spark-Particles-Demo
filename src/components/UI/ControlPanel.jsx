@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './ControlPanel.css';
 
 export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
+  const [isVisible, setIsVisible] = useState(true);
   const handleSliderChange = (path, value) => {
     onSettingChange(path, parseFloat(value));
   };
@@ -48,15 +49,23 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
   if (!settings) return null;
 
   return (
-    <div className={`control-panel ${settings.theme.mode}`}>
-      <div className="control-header">
-        <h3>Particle Controls</h3>
-        <div className="control-actions">
-          <button onClick={() => onSettingChange('theme.mode', settings.theme.mode === 'dark' ? 'light' : 'dark')}>
-            {settings.theme.mode === 'dark' ? '☀️' : '🌙'}
-          </button>
+    <>
+      <div className={`control-panel ${settings.theme.mode} ${isVisible ? 'visible' : 'hidden'}`}>
+        <div className="control-header">
+          <h3>Particle Controls</h3>
+          <div className="control-actions">
+            <button onClick={() => onSettingChange('theme.mode', settings.theme.mode === 'dark' ? 'light' : 'dark')}>
+              {settings.theme.mode === 'dark' ? '☀️' : '🌙'}
+            </button>
+            <button 
+              className="hide-button" 
+              onClick={() => setIsVisible(false)}
+              title="Hide controls"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-      </div>
 
       <div className="control-sections">
         {/* Particle Behavior */}
@@ -314,6 +323,18 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
         </section>
       </div>
     </div>
+    
+    {/* Show tab when panel is hidden */}
+    {!isVisible && (
+      <div 
+        className={`control-tab ${settings.theme.mode}`}
+        onClick={() => setIsVisible(true)}
+        title="Show controls"
+      >
+        <span>⚙️</span>
+      </div>
+    )}
+  </>
   );
 };
 
