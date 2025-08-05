@@ -2,11 +2,11 @@ export const DEFAULT_SETTINGS = {
   version: "1.0",
   
   particles: {
-    maxCount: 1000,
-    spawnRate: 50, // particles per second
+    maxCount: 2000,
+    spawnRate: 55, // particles per second
     lifetime: {
-      min: 2.0,
-      max: 5.0
+      min: 3.3,
+      max: 7.5
     },
     size: {
       base: 12.0,        // Base/maximum size of particles
@@ -16,26 +16,26 @@ export const DEFAULT_SETTINGS = {
       speed: 2.0,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 0.5,
+    upwardForce: 0.27,
     spawnArea: {
-      x: { min: 0.1, max: 0.9 }, // percentage of screen width
-      y: { min: 0.7, max: 0.9 }  // percentage of screen height (bottom area)
+      x: { min: 0.0, max: 1.0 }, // percentage of screen width
+      y: { min: 1.0, max: 1.2 }  // percentage of screen height (below bottom edge)
     }
   },
 
   childSpawning: {
-    probability: 0.002, // per frame probability
+    probability: 0.001, // per frame probability
     forceMultiplier: {
-      target: 1.2,
+      target: 1.4,
       randomRange: 0.3
     },
     maxChildrenPerParticle: 3
   },
 
   perlinNoise: {
-    scale: 0.008,
+    scale: 0.02,
     strength: {
-      horizontal: 0.3,
+      horizontal: 1.0,
       vertical: 0.1
     },
     speed: 0.5,
@@ -44,10 +44,10 @@ export const DEFAULT_SETTINGS = {
 
   mouseInteraction: {
     forceType: 'radial', // 'radial', 'directional', 'suction'
-    strength: 150.0,
-    radius: 100.0,
+    strength: 86.0,
+    radius: 113.0,
     falloffCurve: 2.0,
-    clickSpawnCount: 5
+    clickSpawnCount: 16
   },
 
   visual: {
@@ -62,12 +62,12 @@ export const DEFAULT_SETTINGS = {
     },
     glow: {
       radius: 12.0,
-      intensity: 0.8
+      intensity: 0.2
     },
     colors: {
-      color1: '#FFD700', // Golden yellow
-      color2: '#FF6B35', // Orange red  
-      color3: '#4ECDC4'  // Teal
+      color1: '#6800ff', // Purple
+      color2: '#371a94', // Dark purple
+      color3: '#3a88fe'  // Blue
     }
   },
 
