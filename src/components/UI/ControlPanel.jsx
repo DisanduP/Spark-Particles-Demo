@@ -215,6 +215,81 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(2)}
           />
+        </section>
+
+        {/* Spawn Area */}
+        <section>
+          <h4>Spawn Area</h4>
+          
+          <SliderInput
+            label="Spawn X Min"
+            value={settings.particles.spawnArea.x.min}
+            min={0}
+            max={1}
+            step={0.01}
+            path="particles.spawnArea.x.min"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
+          />
+
+          <SliderInput
+            label="Spawn X Max"
+            value={settings.particles.spawnArea.x.max}
+            min={0}
+            max={1}
+            step={0.01}
+            path="particles.spawnArea.x.max"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
+          />
+
+          <SliderInput
+            label="Spawn Y Min"
+            value={settings.particles.spawnArea.y.min}
+            min={0}
+            max={1}
+            step={0.01}
+            path="particles.spawnArea.y.min"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
+          />
+
+          <SliderInput
+            label="Spawn Y Max"
+            value={settings.particles.spawnArea.y.max}
+            min={0}
+            max={1}
+            step={0.01}
+            path="particles.spawnArea.y.max"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
+          />
+        </section>
+
+        {/* Particle Appearance */}
+        <section>
+          <h4>Particle Appearance</h4>
+          
+          <ColorInput
+            label="Particle Color 1"
+            value={settings.visual.colors.color1}
+            path="visual.colors.color1"
+            onChange={handleSelectChange}
+          />
+          
+          <ColorInput
+            label="Particle Color 2"
+            value={settings.visual.colors.color2}
+            path="visual.colors.color2"
+            onChange={handleSelectChange}
+          />
+          
+          <ColorInput
+            label="Particle Color 3"
+            value={settings.visual.colors.color3}
+            path="visual.colors.color3"
+            onChange={handleSelectChange}
+          />
 
           <SliderInput
             label="Max Particle Size"
@@ -411,27 +486,6 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
               Use Sparkle Texture
             </label>
           </div>
-          
-          <ColorInput
-            label="Particle Color 1"
-            value={settings.visual.colors.color1}
-            path="visual.colors.color1"
-            onChange={handleSelectChange}
-          />
-          
-          <ColorInput
-            label="Particle Color 2"
-            value={settings.visual.colors.color2}
-            path="visual.colors.color2"
-            onChange={handleSelectChange}
-          />
-          
-          <ColorInput
-            label="Particle Color 3"
-            value={settings.visual.colors.color3}
-            path="visual.colors.color3"
-            onChange={handleSelectChange}
-          />
           
           <SliderInput
             label="Glow Intensity"
