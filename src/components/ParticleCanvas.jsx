@@ -11,9 +11,19 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
   const configManagerRef = useRef(null);
   const animationFrameRef = useRef(null);
   const lastTimeRef = useRef(0);
+  const fpsRef = useRef(60);
+  const frameCountRef = useRef(0);
+  const lastFpsUpdateRef = useRef(0);
   
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState(null);
+  const [statusInfo, setStatusInfo] = useState({
+    renderer: 'WebGL',
+    shaderMode: 'Files',
+    particleCount: 0,
+    maxParticles: 1000,
+    fps: 60
+  });
 
   useEffect(() => {
     initializeSystem();
@@ -99,13 +109,33 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
       // Limit delta time to prevent large jumps
       const clampedDelta = Math.min(deltaTime, 1/30); // Max 30fps minimum
 
+      // Update FPS calculation
+      frameCountRef.current++;
+      if (currentTime - lastFpsUpdateRef.current >= 250) { // Update FPS every 250ms for more responsiveness
+        const fps = Math.round(frameCountRef.current / ((currentTime - lastFpsUpdateRef.current) / 1000));
+        fpsRef.current = fps;
+        frameCountRef.current = 0;
+        lastFpsUpdateRef.current = currentTime;
+      }
+
       if (particleManagerRef.current && rendererRef.current && configManagerRef.current) {
         // Update particles
         particleManagerRef.current.update(clampedDelta, currentTime / 1000);
         
-        // Render
-        const particles = particleManagerRef.current.getParticles();
+        // Get current settings to determine shader mode
         const settings = configManagerRef.current.getSettings();
+        const particles = particleManagerRef.current.getParticles();
+        
+        // Update status info
+        setStatusInfo({
+          renderer: rendererRef.current.instancedArraysExt ? 'WebGL (Instanced)' : 'WebGL (Basic)',
+          shaderMode: settings.visual?.useTexture ? 'Files + Texture' : 'Files + Math',
+          particleCount: particles.length,
+          maxParticles: settings.particles.maxCount,
+          fps: fpsRef.current
+        });
+        
+        // Render
         rendererRef.current.render(particles, settings);
       }
 
@@ -113,6 +143,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
     };
 
     lastTimeRef.current = performance.now();
+    lastFpsUpdateRef.current = performance.now();
     animationFrameRef.current = requestAnimationFrame(render);
   };
 
@@ -222,21 +253,26 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
           cursor: 'crosshair'
         }}
       />
-      {/* Debug overlay */}
+      {/* Status Display */}
       <div style={{
         position: 'absolute',
         top: '10px',
         left: '10px',
-        background: 'rgba(0,0,0,0.7)',
+        background: 'rgba(0,0,0,0.8)',
         color: 'white',
-        padding: '5px 10px',
-        borderRadius: '4px',
+        padding: '8px 12px',
+        borderRadius: '6px',
         fontSize: '12px',
         fontFamily: 'monospace',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        lineHeight: '1.4',
+        minWidth: '220px'
       }}>
-        Renderer: WebGL | Shaders: Files | 
-        Particles: {particleManagerRef.current?.particles?.length || 0}
+        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>System Status</div>
+        <div>Renderer: {statusInfo.renderer}</div>
+        <div>Shaders: {statusInfo.shaderMode}</div>
+        <div>Particles: {statusInfo.particleCount} / {statusInfo.maxParticles}</div>
+        <div>FPS: {statusInfo.fps}</div>
       </div>
     </div>
   );
