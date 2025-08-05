@@ -77,46 +77,6 @@ export class WebGLRenderer {
     return shader;
   }
 
-  async loadTexture(imagePath) {
-    const gl = this.gl;
-    
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
-      img.onload = () => {
-        try {
-          // Create texture
-          const texture = gl.createTexture();
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          
-          // Upload image data
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-          
-          // Set texture parameters
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-          
-          // Unbind texture
-          gl.bindTexture(gl.TEXTURE_2D, null);
-          
-          this.texture = texture;
-          resolve(texture);
-        } catch (error) {
-          reject(error);
-        }
-      };
-      
-      img.onerror = () => {
-        reject(new Error(`Failed to load texture: ${imagePath}`));
-      };
-      
-      img.src = imagePath;
-    });
-  }
-
   async loadSVGAsTexture(svgPath) {
     const gl = this.gl;
     
@@ -176,14 +136,20 @@ export class WebGLRenderer {
             gl.bindTexture(gl.TEXTURE_2D, null);
             
             this.texture = texture;
+            
+            // Clean up blob URL
+            URL.revokeObjectURL(url);
+            
             console.log('Texture created successfully from SVG with ultra-high quality antialiasing (1024x1024 with 4x supersampling)');
             resolve(texture);
           } catch (error) {
+            URL.revokeObjectURL(url);
             reject(error);
           }
         };
         
         img.onerror = () => {
+          URL.revokeObjectURL(url);
           reject(new Error(`Failed to load SVG: ${svgPath}`));
         };
         
@@ -191,12 +157,6 @@ export class WebGLRenderer {
         const blob = new Blob([svgText], { type: 'image/svg+xml' });
         const url = URL.createObjectURL(blob);
         img.src = url;
-        
-        // Clean up blob URL after loading
-        img.onload = (originalOnload => function() {
-          URL.revokeObjectURL(url);
-          return originalOnload.apply(this, arguments);
-        })(img.onload);
       });
     } catch (error) {
       console.error('Failed to load SVG as texture:', error);
