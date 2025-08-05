@@ -215,6 +215,28 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(2)}
           />
+
+          <SliderInput
+            label="Max Particle Size"
+            value={settings.particles.size.base}
+            min={2}
+            max={50}
+            step={0.5}
+            path="particles.size.base"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(1)}px`}
+          />
+
+          <SliderInput
+            label="Size Randomness"
+            value={settings.particles.size.randomVariation}
+            min={0}
+            max={1}
+            step={0.01}
+            path="particles.size.randomVariation"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
+          />
         </section>
 
         {/* Child Spawning */}

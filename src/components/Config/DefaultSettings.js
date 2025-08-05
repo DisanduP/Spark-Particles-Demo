@@ -9,8 +9,8 @@ export const DEFAULT_SETTINGS = {
       max: 5.0
     },
     size: {
-      min: 8.0,
-      max: 16.0
+      base: 12.0,        // Base/maximum size of particles
+      randomVariation: 0.5  // How much size can vary (0.0 = no variation, 1.0 = can be 0 to base size)
     },
     upwardForce: 0.5,
     spawnArea: {

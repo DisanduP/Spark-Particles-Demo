@@ -11,8 +11,9 @@ export class Particle {
                    Math.random() * (settings.particles.lifetime.max - settings.particles.lifetime.min);
     
     // Visual properties
-    this.size = settings.particles.size.min + 
-                Math.random() * (settings.particles.size.max - settings.particles.size.min);
+    // Calculate size: base size minus random variation amount
+    const sizeVariation = settings.particles.size.base * settings.particles.size.randomVariation;
+    this.size = settings.particles.size.base - (Math.random() * sizeVariation);
     this.initialSize = this.size;
     
     // Color selection - randomly pick one of the three colors
