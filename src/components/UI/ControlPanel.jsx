@@ -271,6 +271,17 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
           <h4>Visual Effects</h4>
           
           <div className="control-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={settings.visual.useTexture}
+                onChange={(e) => onSettingChange('visual.useTexture', e.target.checked)}
+              />
+              Use Sparkle Texture
+            </label>
+          </div>
+          
+          <div className="control-group">
             <label>Glow Intensity: {settings.visual.glow.intensity.toFixed(1)}</label>
             <input
               type="range"

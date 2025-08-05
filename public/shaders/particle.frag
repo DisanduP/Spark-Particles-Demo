@@ -25,9 +25,8 @@ void main() {
   
   if (u_useTexture) {
     vec4 texColor = texture2D(u_texture, v_uv);
-    // SVG usually has shape in RGB and transparency in alpha
-    // Use alpha if available, otherwise use red channel
-    shape = texColor.a > 0.0 ? texColor.a : (1.0 - texColor.r);
+    // Use the alpha channel directly for the shape
+    shape = texColor.a;
   } else {
     shape = sparkleShape(v_uv);
   }

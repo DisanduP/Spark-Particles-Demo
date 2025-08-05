@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { WebGLRenderer } from './ParticleSystem/WebGLRenderer.js';
 import { ParticleManager } from './ParticleSystem/ParticleManager.js';
 import { ConfigManager } from './Config/ConfigManager.js';
+import sparkleUrl from '../assets/sparkle.svg';
 
 export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
   const canvasRef = useRef(null);
@@ -39,6 +40,18 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
         `${normalizedBasePath}shaders/particle.vert`,
         `${normalizedBasePath}shaders/particle.frag`
       );
+
+      // Load sparkle texture
+      try {
+        console.log('Loading sparkle texture from:', sparkleUrl);
+        await rendererRef.current.loadSVGAsTexture(sparkleUrl);
+        console.log('Sparkle texture loaded successfully');
+      } catch (error) {
+        console.warn('Failed to load sparkle texture, falling back to procedural rendering:', error);
+        // Update settings to disable texture usage if loading failed
+        const currentSettings = configManagerRef.current.getSettings();
+        configManagerRef.current.updateSetting('visual.useTexture', false);
+      }
 
       // Set up canvas size
       resizeCanvas();

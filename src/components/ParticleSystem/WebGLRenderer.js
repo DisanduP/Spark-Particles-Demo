@@ -11,6 +11,7 @@ export class WebGLRenderer {
     this.buffers = {};
     this.uniforms = {};
     this.attributes = {};
+    this.texture = null;
     
     // Check for instanced rendering support
     this.instancedArraysExt = this.gl.getExtension('ANGLE_instanced_arrays');
@@ -76,6 +77,152 @@ export class WebGLRenderer {
     return shader;
   }
 
+  async loadTexture(imagePath) {
+    const gl = this.gl;
+    
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        try {
+          // Create texture
+          const texture = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          
+          // Upload image data
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+          
+          // Set texture parameters
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          
+          // Unbind texture
+          gl.bindTexture(gl.TEXTURE_2D, null);
+          
+          this.texture = texture;
+          resolve(texture);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error(`Failed to load texture: ${imagePath}`));
+      };
+      
+      img.src = imagePath;
+    });
+  }
+
+  async loadSVGAsTexture(svgPath) {
+    const gl = this.gl;
+    
+    try {
+      // Fetch the SVG content
+      const response = await fetch(svgPath);
+      const svgText = await response.text();
+      
+      // Create an image element from the SVG
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          try {
+            // Create a canvas to render the SVG at a higher resolution
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 256; // Increased from 128 to 256 for smoother edges
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Clear to transparent
+            ctx.clearRect(0, 0, size, size);
+            
+            // Enable high-quality rendering
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // Draw the SVG image centered and scaled
+            ctx.drawImage(img, 0, 0, size, size);
+            
+            // Get image data to process alpha
+            const imageData = ctx.getImageData(0, 0, size, size);
+            const data = imageData.data;
+            
+            // Process pixels: convert white pixels to alpha mask
+            // Preserve antialiasing by using grayscale values for alpha
+            for (let i = 0; i < data.length; i += 4) {
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+              const a = data[i + 3];
+              
+              // Calculate luminance from RGB
+              const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+              
+              // Use luminance as alpha for smooth edges
+              if (a > 0) {
+                data[i] = 255;           // R - white
+                data[i + 1] = 255;       // G - white  
+                data[i + 2] = 255;       // B - white
+                data[i + 3] = Math.round(luminance * a); // A - preserve antialiasing
+              } else {
+                data[i + 3] = 0;         // A - fully transparent
+              }
+            }
+            
+            // Put processed image data back
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Create texture from processed canvas
+            const texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            
+            // Upload canvas data
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+            
+            // Set texture parameters for smooth rendering
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            
+            // Unbind texture
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            
+            this.texture = texture;
+            console.log('Texture created successfully from SVG with proper alpha processing');
+            resolve(texture);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        
+        img.onerror = () => {
+          reject(new Error(`Failed to load SVG: ${svgPath}`));
+        };
+        
+        // Create blob URL for the SVG
+        const blob = new Blob([svgText], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        img.src = url;
+        
+        // Clean up blob URL after loading
+        img.onload = (originalOnload => function() {
+          URL.revokeObjectURL(url);
+          return originalOnload.apply(this, arguments);
+        })(img.onload);
+      });
+    } catch (error) {
+      console.error('Failed to load SVG as texture:', error);
+      throw error;
+    }
+  }
+
   getLocations() {
     const gl = this.gl;
     
@@ -95,6 +242,8 @@ export class WebGLRenderer {
       color: gl.getUniformLocation(this.program, 'u_color'),
       glowIntensity: gl.getUniformLocation(this.program, 'u_glowIntensity'),
       isDarkMode: gl.getUniformLocation(this.program, 'u_isDarkMode'),
+      texture: gl.getUniformLocation(this.program, 'u_texture'),
+      useTexture: gl.getUniformLocation(this.program, 'u_useTexture'),
       // Fallback uniforms for non-instanced rendering
       particlePos: gl.getUniformLocation(this.program, 'u_particlePos'),
       particleSize: gl.getUniformLocation(this.program, 'u_particleSize'),
@@ -186,6 +335,16 @@ export class WebGLRenderer {
     gl.uniform3f(this.uniforms.color, 1.0, 0.8, 0.3); // Default ember color
     gl.uniform1f(this.uniforms.glowIntensity, settings.visual.glow.intensity);
     gl.uniform1i(this.uniforms.isDarkMode, settings.theme.mode === 'dark' ? 1 : 0);
+    
+    // Set texture uniforms
+    const useTexture = settings.visual?.useTexture || false;
+    gl.uniform1i(this.uniforms.useTexture, useTexture ? 1 : 0);
+    
+    if (useTexture && this.texture) {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.texture);
+      gl.uniform1i(this.uniforms.texture, 0);
+    }
     
     // Update particle data
     this.updateParticleData(particles);
@@ -283,6 +442,12 @@ export class WebGLRenderer {
     Object.values(this.buffers).forEach(buffer => {
       gl.deleteBuffer(buffer);
     });
+    
+    // Clean up texture
+    if (this.texture) {
+      gl.deleteTexture(this.texture);
+      this.texture = null;
+    }
     
     // Clean up program
     if (this.program) {

@@ -47,6 +47,7 @@ export const DEFAULT_SETTINGS = {
   },
 
   visual: {
+    useTexture: true, // Use SVG texture instead of procedural shape
     bloom: {
       intensity: 1.5,
       radius: 8.0
