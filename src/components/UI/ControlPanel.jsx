@@ -1,6 +1,74 @@
 import React, { useState } from 'react';
 import './ControlPanel.css';
 
+// Reusable component for slider with text input
+const SliderInput = ({ label, value, min, max, step, path, onChange, formatDisplay }) => {
+  const [textValue, setTextValue] = useState(value.toString());
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleSliderChange = (e) => {
+    const newValue = parseFloat(e.target.value);
+    setTextValue(newValue.toString());
+    onChange(path, newValue);
+  };
+
+  const handleTextChange = (e) => {
+    setTextValue(e.target.value);
+  };
+
+  const handleTextSubmit = (e) => {
+    if (e.key === 'Enter' || e.type === 'blur') {
+      const numValue = parseFloat(textValue);
+      if (!isNaN(numValue)) {
+        onChange(path, numValue);
+      } else {
+        // Reset to current value if invalid
+        setTextValue(value.toString());
+      }
+      setIsEditing(false);
+    }
+  };
+
+  const handleTextFocus = () => {
+    setIsEditing(true);
+  };
+
+  // Update text value when prop value changes (from external sources)
+  React.useEffect(() => {
+    if (!isEditing) {
+      setTextValue(value.toString());
+    }
+  }, [value, isEditing]);
+
+  const displayValue = formatDisplay ? formatDisplay(value) : value;
+
+  return (
+    <div className="control-group">
+      <div className="slider-input-header">
+        <label>{label}: {displayValue}</label>
+        <input
+          type="text"
+          className="value-input"
+          value={textValue}
+          onChange={handleTextChange}
+          onKeyDown={handleTextSubmit}
+          onBlur={handleTextSubmit}
+          onFocus={handleTextFocus}
+          title="Click to edit value directly"
+        />
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={Math.min(Math.max(value, min), max)} // Clamp to slider range for display
+        onChange={handleSliderChange}
+      />
+    </div>
+  );
+};
+
 export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
   const [isVisible, setIsVisible] = useState(true);
   const handleSliderChange = (path, value) => {
@@ -72,157 +140,146 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
         <section>
           <h4>Particle Behavior</h4>
           
-          <div className="control-group">
-            <label>Max Particles: {settings.particles.maxCount}</label>
-            <input
-              type="range"
-              min="50"
-              max="2000"
-              value={settings.particles.maxCount}
-              onChange={(e) => handleSliderChange('particles.maxCount', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Max Particles"
+            value={settings.particles.maxCount}
+            min={50}
+            max={2000}
+            step={1}
+            path="particles.maxCount"
+            onChange={handleSliderChange}
+          />
 
-          <div className="control-group">
-            <label>Spawn Rate: {settings.particles.spawnRate}/s</label>
-            <input
-              type="range"
-              min="1"
-              max="200"
-              value={settings.particles.spawnRate}
-              onChange={(e) => handleSliderChange('particles.spawnRate', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Spawn Rate"
+            value={settings.particles.spawnRate}
+            min={1}
+            max={200}
+            step={1}
+            path="particles.spawnRate"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val}/s`}
+          />
 
-          <div className="control-group">
-            <label>Lifetime Min: {settings.particles.lifetime.min.toFixed(1)}s</label>
-            <input
-              type="range"
-              min="0.5"
-              max="10"
-              step="0.1"
-              value={settings.particles.lifetime.min}
-              onChange={(e) => handleSliderChange('particles.lifetime.min', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Lifetime Min"
+            value={settings.particles.lifetime.min}
+            min={0.5}
+            max={10}
+            step={0.1}
+            path="particles.lifetime.min"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(1)}s`}
+          />
 
-          <div className="control-group">
-            <label>Lifetime Max: {settings.particles.lifetime.max.toFixed(1)}s</label>
-            <input
-              type="range"
-              min="0.5"
-              max="10"
-              step="0.1"
-              value={settings.particles.lifetime.max}
-              onChange={(e) => handleSliderChange('particles.lifetime.max', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Lifetime Max"
+            value={settings.particles.lifetime.max}
+            min={0.5}
+            max={10}
+            step={0.1}
+            path="particles.lifetime.max"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(1)}s`}
+          />
 
-          <div className="control-group">
-            <label>Upward Force: {settings.particles.upwardForce.toFixed(2)}</label>
-            <input
-              type="range"
-              min="0"
-              max="2"
-              step="0.01"
-              value={settings.particles.upwardForce}
-              onChange={(e) => handleSliderChange('particles.upwardForce', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Upward Force"
+            value={settings.particles.upwardForce}
+            min={0}
+            max={2}
+            step={0.01}
+            path="particles.upwardForce"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(2)}
+          />
         </section>
 
         {/* Child Spawning */}
         <section>
           <h4>Child Spawning</h4>
           
-          <div className="control-group">
-            <label>Spawn Probability: {(settings.childSpawning.probability * 1000).toFixed(1)}/1000</label>
-            <input
-              type="range"
-              min="0"
-              max="0.01"
-              step="0.0001"
-              value={settings.childSpawning.probability}
-              onChange={(e) => handleSliderChange('childSpawning.probability', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Spawn Probability"
+            value={settings.childSpawning.probability}
+            min={0}
+            max={0.01}
+            step={0.0001}
+            path="childSpawning.probability"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 1000).toFixed(1)}/1000`}
+          />
 
-          <div className="control-group">
-            <label>Force Multiplier: {settings.childSpawning.forceMultiplier.target.toFixed(2)}</label>
-            <input
-              type="range"
-              min="0.5"
-              max="3"
-              step="0.1"
-              value={settings.childSpawning.forceMultiplier.target}
-              onChange={(e) => handleSliderChange('childSpawning.forceMultiplier.target', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Force Multiplier"
+            value={settings.childSpawning.forceMultiplier.target}
+            min={0.5}
+            max={3}
+            step={0.1}
+            path="childSpawning.forceMultiplier.target"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(2)}
+          />
 
-          <div className="control-group">
-            <label>Random Range: {settings.childSpawning.forceMultiplier.randomRange.toFixed(2)}</label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={settings.childSpawning.forceMultiplier.randomRange}
-              onChange={(e) => handleSliderChange('childSpawning.forceMultiplier.randomRange', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Random Range"
+            value={settings.childSpawning.forceMultiplier.randomRange}
+            min={0}
+            max={1}
+            step={0.05}
+            path="childSpawning.forceMultiplier.randomRange"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(2)}
+          />
         </section>
 
         {/* Perlin Noise */}
         <section>
           <h4>Perlin Noise</h4>
           
-          <div className="control-group">
-            <label>Scale: {settings.perlinNoise.scale.toFixed(4)}</label>
-            <input
-              type="range"
-              min="0.001"
-              max="0.02"
-              step="0.0001"
-              value={settings.perlinNoise.scale}
-              onChange={(e) => handleSliderChange('perlinNoise.scale', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Scale"
+            value={settings.perlinNoise.scale}
+            min={0.001}
+            max={0.02}
+            step={0.0001}
+            path="perlinNoise.scale"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(4)}
+          />
 
-          <div className="control-group">
-            <label>Horizontal Strength: {settings.perlinNoise.strength.horizontal.toFixed(2)}</label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={settings.perlinNoise.strength.horizontal}
-              onChange={(e) => handleSliderChange('perlinNoise.strength.horizontal', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Horizontal Strength"
+            value={settings.perlinNoise.strength.horizontal}
+            min={0}
+            max={1}
+            step={0.01}
+            path="perlinNoise.strength.horizontal"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(2)}
+          />
 
-          <div className="control-group">
-            <label>Vertical Strength: {settings.perlinNoise.strength.vertical.toFixed(2)}</label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={settings.perlinNoise.strength.vertical}
-              onChange={(e) => handleSliderChange('perlinNoise.strength.vertical', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Vertical Strength"
+            value={settings.perlinNoise.strength.vertical}
+            min={0}
+            max={1}
+            step={0.01}
+            path="perlinNoise.strength.vertical"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(2)}
+          />
 
-          <div className="control-group">
-            <label>Speed: {settings.perlinNoise.speed.toFixed(1)}</label>
-            <input
-              type="range"
-              min="0.1"
-              max="2"
-              step="0.1"
-              value={settings.perlinNoise.speed}
-              onChange={(e) => handleSliderChange('perlinNoise.speed', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Speed"
+            value={settings.perlinNoise.speed}
+            min={0.1}
+            max={2}
+            step={0.1}
+            path="perlinNoise.speed"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(1)}
+          />
         </section>
 
         {/* Mouse Interaction */}
@@ -241,38 +298,37 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             </select>
           </div>
 
-          <div className="control-group">
-            <label>Force Strength: {settings.mouseInteraction.strength.toFixed(0)}</label>
-            <input
-              type="range"
-              min="0"
-              max="500"
-              value={settings.mouseInteraction.strength}
-              onChange={(e) => handleSliderChange('mouseInteraction.strength', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Force Strength"
+            value={settings.mouseInteraction.strength}
+            min={0}
+            max={500}
+            step={1}
+            path="mouseInteraction.strength"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(0)}
+          />
 
-          <div className="control-group">
-            <label>Influence Radius: {settings.mouseInteraction.radius.toFixed(0)}px</label>
-            <input
-              type="range"
-              min="20"
-              max="300"
-              value={settings.mouseInteraction.radius}
-              onChange={(e) => handleSliderChange('mouseInteraction.radius', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Influence Radius"
+            value={settings.mouseInteraction.radius}
+            min={20}
+            max={300}
+            step={1}
+            path="mouseInteraction.radius"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(0)}px`}
+          />
 
-          <div className="control-group">
-            <label>Click Spawn Count: {settings.mouseInteraction.clickSpawnCount}</label>
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={settings.mouseInteraction.clickSpawnCount}
-              onChange={(e) => handleSliderChange('mouseInteraction.clickSpawnCount', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Click Spawn Count"
+            value={settings.mouseInteraction.clickSpawnCount}
+            min={1}
+            max={20}
+            step={1}
+            path="mouseInteraction.clickSpawnCount"
+            onChange={handleSliderChange}
+          />
         </section>
 
         {/* Visual Effects */}
@@ -290,17 +346,16 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             </label>
           </div>
           
-          <div className="control-group">
-            <label>Glow Intensity: {settings.visual.glow.intensity.toFixed(1)}</label>
-            <input
-              type="range"
-              min="0"
-              max="3"
-              step="0.1"
-              value={settings.visual.glow.intensity}
-              onChange={(e) => handleSliderChange('visual.glow.intensity', e.target.value)}
-            />
-          </div>
+          <SliderInput
+            label="Glow Intensity"
+            value={settings.visual.glow.intensity}
+            min={0}
+            max={3}
+            step={0.1}
+            path="visual.glow.intensity"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => val.toFixed(1)}
+          />
         </section>
 
         {/* Config Management */}

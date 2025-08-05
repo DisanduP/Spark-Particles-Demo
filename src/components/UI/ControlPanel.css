@@ -325,3 +325,55 @@
     transform: translateX(0);
   }
 }
+
+/* Slider-Input Component Styles */
+.slider-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.slider-input-header label {
+  flex: 1;
+  margin: 0;
+  font-weight: 500;
+  color: #555;
+}
+
+.control-panel.dark .slider-input-header label {
+  color: #cccccc;
+}
+
+.value-input {
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #ffffff;
+  font-size: 12px;
+  text-align: center;
+  font-family: monospace;
+  transition: all 0.2s ease;
+}
+
+.value-input:focus {
+  outline: none;
+  border-color: #007AFF;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.control-panel.dark .value-input {
+  background: #333;
+  border: 1px solid #555;
+  color: #ffffff;
+}
+
+.control-panel.dark .value-input:focus {
+  border-color: #007AFF;
+}
+
+/* Improve existing control-group for slider-input compatibility */
+.control-group .slider-input-header + input[type="range"] {
+  margin-top: 0;
+}
