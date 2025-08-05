@@ -53,56 +53,65 @@ void main() {
 }
 `;
 
-const fragmentShaderSource = `
-precision mediump float;
-
-varying float v_life;
-varying float v_alpha;
-varying vec2 v_uv;
-
-uniform vec3 u_color;
-uniform float u_glowIntensity;
-uniform bool u_isDarkMode;
-
-float sparkleShape(vec2 uv) {
-  vec2 center = uv - 0.5;
-  float dist = length(center);
-  
-  float angle = atan(center.y, center.x);
-  float rays = abs(sin(angle * 4.0)) * 0.3 + 0.7;
-  float star = smoothstep(0.4 * rays, 0.2 * rays, dist);
-  
-  float glow = exp(-dist * 8.0) * 0.5;
-  
-  return max(star, glow);
-}
-
-void main() {
-  float shape = sparkleShape(v_uv);
-  
-  vec3 hotColor = vec3(1.0, 0.8, 0.2);
-  vec3 warmColor = vec3(1.0, 0.4, 0.1);
-  vec3 coolColor = vec3(0.8, 0.2, 0.0);
-  
-  vec3 color;
-  if (v_life > 0.7) {
-    color = mix(coolColor, warmColor, (v_life - 0.7) / 0.3);
-  } else {
-    color = mix(warmColor, hotColor, v_life / 0.7);
-  }
-  
-  if (!u_isDarkMode) {
-    color = color * 0.8 + vec3(0.2);
-  }
-  
-  color = mix(color, u_color, 0.3);
-  
-  float finalAlpha = shape * v_alpha;
-  color += vec3(u_glowIntensity * 0.3) * shape;
-  
-  gl_FragColor = vec4(color, finalAlpha);
-}
-`;
+// Fragment shader with texture support - using string concatenation to avoid parsing issues
+const fragmentShaderSource = [
+  'precision mediump float;',
+  '',
+  'varying float v_life;',
+  'varying float v_alpha;',
+  'varying vec2 v_uv;',
+  '',
+  'uniform vec3 u_color;',
+  'uniform float u_glowIntensity;',
+  'uniform bool u_isDarkMode;',
+  'uniform sampler2D u_texture;',
+  'uniform bool u_useTexture;',
+  '',
+  'float sparkleShape(vec2 uv) {',
+  '  vec2 center = uv - 0.5;',
+  '  float dist = length(center);',
+  '  float angle = atan(center.y, center.x);',
+  '  float rays = abs(sin(angle * 4.0)) * 0.3 + 0.7;',
+  '  float star = smoothstep(0.4 * rays, 0.2 * rays, dist);',
+  '  float glow = exp(-dist * 8.0) * 0.5;',
+  '  return max(star, glow);',
+  '}',
+  '',
+  'void main() {',
+  '  float shape;',
+  '  ',
+  '  if (u_useTexture) {',
+  '    vec4 texColor = texture2D(u_texture, v_uv);',
+  '    // SVG usually has shape in RGB and transparency in alpha',
+  '    // Use alpha if available, otherwise use red channel',
+  '    shape = texColor.a > 0.0 ? texColor.a : (1.0 - texColor.r);',
+  '  } else {',
+  '    shape = sparkleShape(v_uv);',
+  '  }',
+  '  ',
+  '  vec3 hotColor = vec3(1.0, 0.8, 0.2);',
+  '  vec3 warmColor = vec3(1.0, 0.4, 0.1);',
+  '  vec3 coolColor = vec3(0.8, 0.2, 0.0);',
+  '  ',
+  '  vec3 color;',
+  '  if (v_life > 0.7) {',
+  '    color = mix(coolColor, warmColor, (v_life - 0.7) / 0.3);',
+  '  } else {',
+  '    color = mix(warmColor, hotColor, v_life / 0.7);',
+  '  }',
+  '  ',
+  '  if (!u_isDarkMode) {',
+  '    color = color * 0.8 + vec3(0.2);',
+  '  }',
+  '  ',
+  '  color = mix(color, u_color, 0.3);',
+  '  ',
+  '  float finalAlpha = shape * v_alpha;',
+  '  color += vec3(u_glowIntensity * 0.3) * shape;',
+  '  ',
+  '  gl_FragColor = vec4(color, finalAlpha);',
+  '}'
+].join('\n');
 
 export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
   const canvasRef = useRef(null);
@@ -134,6 +143,15 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
 
       // Load shaders
       await rendererRef.current.loadShaders(vertexShaderSource, fragmentShaderSource);
+
+      // Load SVG texture for particles
+      try {
+        // Use the correct path for Vite dev server - SVG is now in public folder
+        await rendererRef.current.enableSVGTextures('/spark-particles/sparkle.svg');
+        console.log('SVG particle texture loaded successfully');
+      } catch (error) {
+        console.warn('Failed to load SVG texture, using mathematical fallback:', error);
+      }
 
       // Set up canvas size
       resizeCanvas();
@@ -249,17 +267,24 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Expose config manager to parent
+  // Expose config manager to parent - only run once when initialized
+  const hasCalledCallbacksRef = useRef(false);
+  
   useEffect(() => {
-    if (configManagerRef.current && onSettingsChange) {
-      onSettingsChange(configManagerRef.current.getSettings());
+    if (isInitialized && configManagerRef.current && !hasCalledCallbacksRef.current) {
+      hasCalledCallbacksRef.current = true;
+      
+      // Only call onSettingsChange if it hasn't been called yet
+      if (onSettingsChange) {
+        onSettingsChange(configManagerRef.current.getSettings());
+      }
       
       // Also call onReady if provided
       if (onReady) {
         onReady(canvasRef.current, configManagerRef.current);
       }
     }
-  }, [isInitialized, onSettingsChange]);
+  }, [isInitialized, onSettingsChange, onReady]); // Include callbacks but prevent multiple calls with ref
 
   if (error) {
     return (
@@ -285,17 +310,35 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
   }
 
   return (
-    <canvas
-      ref={canvasRef}
-      onMouseMove={handleMouseMove}
-      onClick={handleMouseClick}
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'block',
-        cursor: 'crosshair'
-      }}
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <canvas
+        ref={canvasRef}
+        onMouseMove={handleMouseMove}
+        onClick={handleMouseClick}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          cursor: 'crosshair'
+        }}
+      />
+      {/* Debug overlay */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        background: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        padding: '5px 10px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        pointerEvents: 'none'
+      }}>
+        Texture: {rendererRef.current?.useTexture ? 'SVG' : 'Math'} | 
+        Particles: {particleManagerRef.current?.particles?.length || 0}
+      </div>
+    </div>
   );
 };
 
