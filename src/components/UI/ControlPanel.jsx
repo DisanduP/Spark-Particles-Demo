@@ -1,6 +1,28 @@
 import React, { useState } from 'react';
 import './ControlPanel.css';
 
+// Reusable component for color input
+const ColorInput = ({ label, value, path, onChange }) => {
+  const handleColorChange = (e) => {
+    onChange(path, e.target.value);
+  };
+
+  return (
+    <div className="control-group">
+      <label>{label}:</label>
+      <div className="color-input-container">
+        <input
+          type="color"
+          value={value}
+          onChange={handleColorChange}
+          className="color-input"
+        />
+        <span className="color-value">{value}</span>
+      </div>
+    </div>
+  );
+};
+
 // Reusable component for slider with text input
 const SliderInput = ({ label, value, min, max, step, path, onChange, formatDisplay }) => {
   const [textValue, setTextValue] = useState(value.toString());
@@ -345,6 +367,27 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
               Use Sparkle Texture
             </label>
           </div>
+          
+          <ColorInput
+            label="Particle Color 1"
+            value={settings.visual.colors.color1}
+            path="visual.colors.color1"
+            onChange={handleSelectChange}
+          />
+          
+          <ColorInput
+            label="Particle Color 2"
+            value={settings.visual.colors.color2}
+            path="visual.colors.color2"
+            onChange={handleSelectChange}
+          />
+          
+          <ColorInput
+            label="Particle Color 3"
+            value={settings.visual.colors.color3}
+            path="visual.colors.color3"
+            onChange={handleSelectChange}
+          />
           
           <SliderInput
             label="Glow Intensity"

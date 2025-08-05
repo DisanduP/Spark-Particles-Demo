@@ -59,6 +59,11 @@ export const DEFAULT_SETTINGS = {
     glow: {
       radius: 12.0,
       intensity: 0.8
+    },
+    colors: {
+      color1: '#FFD700', // Golden yellow
+      color2: '#FF6B35', // Orange red  
+      color3: '#4ECDC4'  // Teal
     }
   },
 

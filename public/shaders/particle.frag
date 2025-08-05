@@ -3,6 +3,7 @@ precision mediump float;
 varying float v_life;
 varying float v_alpha;
 varying vec2 v_uv;
+varying vec3 v_color;
 
 uniform vec3 u_color;
 uniform float u_glowIntensity;
@@ -35,15 +36,17 @@ void main() {
     shape = sparkleShape(v_uv);
   }
   
-  vec3 hotColor = vec3(1.0, 0.8, 0.2);
-  vec3 warmColor = vec3(1.0, 0.4, 0.1);
-  vec3 coolColor = vec3(0.8, 0.2, 0.0);
+  // Use the per-particle color instead of lifecycle-based colors
+  vec3 baseColor = v_color;
   
+  // Create a slightly brighter center and darker edges based on particle lifecycle
   vec3 color;
   if (v_life > 0.7) {
-    color = mix(coolColor, warmColor, (v_life - 0.7) / 0.3);
+    // Fade to darker version at end of life
+    color = mix(baseColor * 0.5, baseColor, (v_life - 0.7) / 0.3);
   } else {
-    color = mix(warmColor, hotColor, v_life / 0.7);
+    // Brighten during prime life
+    color = mix(baseColor, baseColor * 1.5, v_life / 0.7);
   }
   
   if (!u_isDarkMode) {

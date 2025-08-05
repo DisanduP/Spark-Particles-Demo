@@ -3,6 +3,7 @@ attribute vec2 a_particlePos;
 attribute float a_size;
 attribute float a_life;
 attribute float a_maxLife;
+attribute vec3 a_color;
 
 uniform vec2 u_resolution;
 uniform mat3 u_transform;
@@ -12,10 +13,12 @@ uniform vec2 u_particlePos;
 uniform float u_particleSize;
 uniform float u_particleLife;
 uniform float u_particleMaxLife;
+uniform vec3 u_particleColor;
 
 varying float v_life;
 varying float v_alpha;
 varying vec2 v_uv;
+varying vec3 v_color;
 
 void main() {
   // Use instanced attributes if available, otherwise use uniforms
@@ -23,6 +26,10 @@ void main() {
   float size = a_size != 0.0 ? a_size : u_particleSize;
   float life = a_life != 0.0 ? a_life : u_particleLife;
   float maxLife = a_maxLife != 0.0 ? a_maxLife : u_particleMaxLife;
+  vec3 color = a_color != vec3(0.0) ? a_color : u_particleColor;
+  
+  // Pass color to fragment shader
+  v_color = color;
   
   // Calculate lifecycle alpha
   v_life = life / maxLife;

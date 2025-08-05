@@ -173,7 +173,8 @@ export class WebGLRenderer {
       particlePos: gl.getAttribLocation(this.program, 'a_particlePos'),
       size: gl.getAttribLocation(this.program, 'a_size'),
       life: gl.getAttribLocation(this.program, 'a_life'),
-      maxLife: gl.getAttribLocation(this.program, 'a_maxLife')
+      maxLife: gl.getAttribLocation(this.program, 'a_maxLife'),
+      color: gl.getAttribLocation(this.program, 'a_color')
     };
     
     // Uniforms
@@ -185,11 +186,12 @@ export class WebGLRenderer {
       isDarkMode: gl.getUniformLocation(this.program, 'u_isDarkMode'),
       texture: gl.getUniformLocation(this.program, 'u_texture'),
       useTexture: gl.getUniformLocation(this.program, 'u_useTexture'),
-      // Fallback uniforms for non-instanced rendering
+            // For non-instanced fallback
       particlePos: gl.getUniformLocation(this.program, 'u_particlePos'),
       particleSize: gl.getUniformLocation(this.program, 'u_particleSize'),
       particleLife: gl.getUniformLocation(this.program, 'u_particleLife'),
-      particleMaxLife: gl.getUniformLocation(this.program, 'u_particleMaxLife')
+      particleMaxLife: gl.getUniformLocation(this.program, 'u_particleMaxLife'),
+      particleColor: gl.getUniformLocation(this.program, 'u_particleColor')
     };
   }
 
@@ -216,6 +218,7 @@ export class WebGLRenderer {
     this.buffers.size = gl.createBuffer();
     this.buffers.life = gl.createBuffer();
     this.buffers.maxLife = gl.createBuffer();
+    this.buffers.color = gl.createBuffer();
   }
 
   updateParticleData(particles) {
@@ -229,6 +232,7 @@ export class WebGLRenderer {
     const sizes = new Float32Array(particleCount);
     const lives = new Float32Array(particleCount);
     const maxLives = new Float32Array(particleCount);
+    const colors = new Float32Array(particleCount * 3); // RGB values
     
     // Fill arrays with particle data
     for (let i = 0; i < particleCount; i++) {
@@ -238,6 +242,12 @@ export class WebGLRenderer {
       sizes[i] = particle.size;
       lives[i] = particle.life;
       maxLives[i] = particle.maxLife;
+      
+      // Convert hex color to RGB
+      const rgb = this.hexToRgb(particle.color);
+      colors[i * 3] = rgb.r;
+      colors[i * 3 + 1] = rgb.g;
+      colors[i * 3 + 2] = rgb.b;
     }
     
     // Update buffers
@@ -252,6 +262,9 @@ export class WebGLRenderer {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.maxLife);
     gl.bufferData(gl.ARRAY_BUFFER, maxLives, gl.DYNAMIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color);
+    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
   }
 
   render(particles, settings) {
@@ -336,6 +349,12 @@ export class WebGLRenderer {
     gl.enableVertexAttribArray(this.attributes.maxLife);
     gl.vertexAttribPointer(this.attributes.maxLife, 1, gl.FLOAT, false, 0, 0);
     this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.maxLife, 1);
+    
+    // Particle colors (instanced)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color);
+    gl.enableVertexAttribArray(this.attributes.color);
+    gl.vertexAttribPointer(this.attributes.color, 3, gl.FLOAT, false, 0, 0);
+    this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.color, 1);
   }
 
   setupBasicRendering() {
@@ -355,6 +374,10 @@ export class WebGLRenderer {
     gl.uniform1f(this.uniforms.particleSize, particle.size);
     gl.uniform1f(this.uniforms.particleLife, particle.life);
     gl.uniform1f(this.uniforms.particleMaxLife, particle.maxLife);
+    
+    // Set particle color
+    const rgb = this.hexToRgb(particle.color);
+    gl.uniform3f(this.uniforms.particleColor, rgb.r, rgb.g, rgb.b);
   }
 
   resize() {

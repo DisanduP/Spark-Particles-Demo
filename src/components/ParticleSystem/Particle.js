@@ -15,6 +15,14 @@ export class Particle {
                 Math.random() * (settings.particles.size.max - settings.particles.size.min);
     this.initialSize = this.size;
     
+    // Color selection - randomly pick one of the three colors
+    const colors = [
+      settings.visual.colors.color1,
+      settings.visual.colors.color2,
+      settings.visual.colors.color3
+    ];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+    
     // Child spawning
     this.childrenSpawned = 0;
     this.maxChildren = settings.childSpawning.maxChildrenPerParticle;
