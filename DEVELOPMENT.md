@@ -74,4 +74,23 @@ The foundation is solid and ready for iterative development. All components are 
 
 **Start the dev server**: `npm run dev`
 **Build for production**: `npm run build`
-**Deploy to GitHub Pages**: `npm run deploy` (after setting up gh-pages)
+**Preview production build**: `npm run preview`
+
+## 🚀 Deployment
+
+The project is set up for automatic deployment to GitHub Pages using GitHub Actions:
+
+1. **Automatic Deployment**: Every push to the `main` branch triggers a build and deployment
+2. **Manual Deployment**: You can also trigger deployment manually from the GitHub Actions tab
+3. **Live Site**: Once deployed, the site will be available at `https://cameronfoxly.github.io/spark-particles/`
+
+### Setting Up GitHub Pages (One-time setup)
+
+1. Go to your repository settings on GitHub
+2. Navigate to "Pages" in the sidebar
+3. Under "Source", select "GitHub Actions"
+4. The workflow will handle the rest automatically
+
+### Local Testing
+- Run `npm run build` to test the production build locally
+- Run `npm run preview` to preview the built application

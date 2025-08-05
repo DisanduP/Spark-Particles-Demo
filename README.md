@@ -85,6 +85,19 @@ Optimized for different performance levels with automatic fallbacks:
 - Automatic WebGL instancing with graceful fallback
 - Configurable quality settings
 
+## Deployment
+
+This project is set up for automatic deployment to GitHub Pages:
+
+- **Live Demo**: [https://cameronfoxly.github.io/spark-particles/](https://cameronfoxly.github.io/spark-particles/)
+- **Auto Deploy**: Pushes to `main` branch automatically trigger deployment
+- **Manual Deploy**: Can be triggered from GitHub Actions tab
+
+### GitHub Pages Setup (One-time)
+1. Go to repository Settings → Pages
+2. Set Source to "GitHub Actions"
+3. The workflow handles the rest automatically
+
 ## Browser Support
 
 - **Modern browsers**: Full WebGL support with instanced rendering
