@@ -132,70 +132,51 @@ export class WebGLRenderer {
       return new Promise((resolve, reject) => {
         img.onload = () => {
           try {
-            // Create a canvas to render the SVG at a higher resolution
+            // Create a canvas to render the SVG at a very high resolution
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const size = 256; // Increased from 128 to 256 for smoother edges
+            const size = 1024; // Much higher resolution for ultra-smooth edges
             canvas.width = size;
             canvas.height = size;
             
             // Clear to transparent
             ctx.clearRect(0, 0, size, size);
             
-            // Enable high-quality rendering
+            // Enable maximum quality rendering
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             
-            // Draw the SVG image centered and scaled
-            ctx.drawImage(img, 0, 0, size, size);
+            // Scale up the context for better rasterization
+            const scale = 4; // Render at 4x size internally
+            ctx.scale(scale, scale);
             
-            // Get image data to process alpha
-            const imageData = ctx.getImageData(0, 0, size, size);
-            const data = imageData.data;
+            // Draw the SVG image at the scaled size
+            ctx.drawImage(img, 0, 0, size / scale, size / scale);
             
-            // Process pixels: convert white pixels to alpha mask
-            // Preserve antialiasing by using grayscale values for alpha
-            for (let i = 0; i < data.length; i += 4) {
-              const r = data[i];
-              const g = data[i + 1];
-              const b = data[i + 2];
-              const a = data[i + 3];
-              
-              // Calculate luminance from RGB
-              const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
-              
-              // Use luminance as alpha for smooth edges
-              if (a > 0) {
-                data[i] = 255;           // R - white
-                data[i + 1] = 255;       // G - white  
-                data[i + 2] = 255;       // B - white
-                data[i + 3] = Math.round(luminance * a); // A - preserve antialiasing
-              } else {
-                data[i + 3] = 0;         // A - fully transparent
-              }
-            }
+            // Reset scale for texture creation
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             
-            // Put processed image data back
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Create texture from processed canvas
+            // Create texture directly from high-res canvas
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             
-            // Upload canvas data
+            // Upload canvas data directly
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
             
-            // Set texture parameters for smooth rendering
+            // Enable mipmapping for even smoother scaling
+            gl.generateMipmap(gl.TEXTURE_2D);
+            
+            // Set texture parameters for maximum quality
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             
             // Unbind texture
             gl.bindTexture(gl.TEXTURE_2D, null);
             
             this.texture = texture;
-            console.log('Texture created successfully from SVG with proper alpha processing');
+            console.log('Texture created successfully from SVG with ultra-high quality antialiasing (1024x1024 with 4x supersampling)');
             resolve(texture);
           } catch (error) {
             reject(error);

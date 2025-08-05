@@ -25,8 +25,12 @@ void main() {
   
   if (u_useTexture) {
     vec4 texColor = texture2D(u_texture, v_uv);
-    // Use the alpha channel directly for the shape
-    shape = texColor.a;
+    // Use luminance of RGB as alpha for white shapes on transparent background
+    float luminance = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
+    float rawShape = luminance * texColor.a;
+    
+    // Add subtle edge smoothing for ultra-smooth antialiasing
+    shape = smoothstep(0.1, 0.9, rawShape);
   } else {
     shape = sparkleShape(v_uv);
   }
