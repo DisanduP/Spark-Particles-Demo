@@ -237,6 +237,28 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
           />
+
+          <SliderInput
+            label="Rotation Speed"
+            value={settings.particles.rotation.speed}
+            min={0}
+            max={10}
+            step={0.1}
+            path="particles.rotation.speed"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(1)} rad/s`}
+          />
+
+          <SliderInput
+            label="Rotation Randomness"
+            value={settings.particles.rotation.randomVariation}
+            min={0}
+            max={1}
+            step={0.01}
+            path="particles.rotation.randomVariation"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
+          />
         </section>
 
         {/* Child Spawning */}

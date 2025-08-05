@@ -12,6 +12,10 @@ export const DEFAULT_SETTINGS = {
       base: 12.0,        // Base/maximum size of particles
       randomVariation: 0.5  // How much size can vary (0.0 = no variation, 1.0 = can be 0 to base size)
     },
+    rotation: {
+      speed: 2.0,        // Base rotation speed (radians per second)
+      randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
+    },
     upwardForce: 0.5,
     spawnArea: {
       x: { min: 0.1, max: 0.9 }, // percentage of screen width

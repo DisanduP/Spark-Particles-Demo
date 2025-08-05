@@ -174,7 +174,8 @@ export class WebGLRenderer {
       size: gl.getAttribLocation(this.program, 'a_size'),
       life: gl.getAttribLocation(this.program, 'a_life'),
       maxLife: gl.getAttribLocation(this.program, 'a_maxLife'),
-      color: gl.getAttribLocation(this.program, 'a_color')
+      color: gl.getAttribLocation(this.program, 'a_color'),
+      rotation: gl.getAttribLocation(this.program, 'a_rotation')
     };
     
     // Uniforms
@@ -191,7 +192,8 @@ export class WebGLRenderer {
       particleSize: gl.getUniformLocation(this.program, 'u_particleSize'),
       particleLife: gl.getUniformLocation(this.program, 'u_particleLife'),
       particleMaxLife: gl.getUniformLocation(this.program, 'u_particleMaxLife'),
-      particleColor: gl.getUniformLocation(this.program, 'u_particleColor')
+      particleColor: gl.getUniformLocation(this.program, 'u_particleColor'),
+      particleRotation: gl.getUniformLocation(this.program, 'u_particleRotation')
     };
   }
 
@@ -219,6 +221,7 @@ export class WebGLRenderer {
     this.buffers.life = gl.createBuffer();
     this.buffers.maxLife = gl.createBuffer();
     this.buffers.color = gl.createBuffer();
+    this.buffers.rotation = gl.createBuffer();
   }
 
   updateParticleData(particles) {
@@ -233,6 +236,7 @@ export class WebGLRenderer {
     const lives = new Float32Array(particleCount);
     const maxLives = new Float32Array(particleCount);
     const colors = new Float32Array(particleCount * 3); // RGB values
+    const rotations = new Float32Array(particleCount);
     
     // Fill arrays with particle data
     for (let i = 0; i < particleCount; i++) {
@@ -242,6 +246,7 @@ export class WebGLRenderer {
       sizes[i] = particle.size;
       lives[i] = particle.life;
       maxLives[i] = particle.maxLife;
+      rotations[i] = particle.rotation;
       
       // Convert hex color to RGB
       const rgb = this.hexToRgb(particle.color);
@@ -265,6 +270,9 @@ export class WebGLRenderer {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color);
     gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.rotation);
+    gl.bufferData(gl.ARRAY_BUFFER, rotations, gl.DYNAMIC_DRAW);
   }
 
   render(particles, settings) {
@@ -355,6 +363,12 @@ export class WebGLRenderer {
     gl.enableVertexAttribArray(this.attributes.color);
     gl.vertexAttribPointer(this.attributes.color, 3, gl.FLOAT, false, 0, 0);
     this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.color, 1);
+    
+    // Particle rotations (instanced)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.rotation);
+    gl.enableVertexAttribArray(this.attributes.rotation);
+    gl.vertexAttribPointer(this.attributes.rotation, 1, gl.FLOAT, false, 0, 0);
+    this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.rotation, 1);
   }
 
   setupBasicRendering() {
@@ -374,6 +388,7 @@ export class WebGLRenderer {
     gl.uniform1f(this.uniforms.particleSize, particle.size);
     gl.uniform1f(this.uniforms.particleLife, particle.life);
     gl.uniform1f(this.uniforms.particleMaxLife, particle.maxLife);
+    gl.uniform1f(this.uniforms.particleRotation, particle.rotation);
     
     // Set particle color
     const rgb = this.hexToRgb(particle.color);

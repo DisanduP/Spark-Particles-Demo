@@ -24,6 +24,15 @@ export class Particle {
     ];
     this.color = colors[Math.floor(Math.random() * colors.length)];
     
+    // Rotation properties
+    const rotationVariation = settings.particles.rotation.speed * settings.particles.rotation.randomVariation;
+    this.rotationSpeed = settings.particles.rotation.speed - (Math.random() * rotationVariation);
+    // Add some random direction to rotation (clockwise or counterclockwise)
+    if (Math.random() < 0.5) {
+      this.rotationSpeed *= -1;
+    }
+    this.rotation = Math.random() * Math.PI * 2; // Start at random rotation
+    
     // Child spawning
     this.childrenSpawned = 0;
     this.maxChildren = settings.childSpawning.maxChildrenPerParticle;
@@ -67,6 +76,9 @@ export class Particle {
     // Update size based on lifecycle
     const lifeRatio = this.life / this.maxLife;
     this.size = this.initialSize * this.getSizeMultiplier(lifeRatio);
+    
+    // Update rotation
+    this.rotation += this.rotationSpeed * deltaTime;
     
     return this;
   }

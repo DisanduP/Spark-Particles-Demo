@@ -149,8 +149,9 @@ export class Canvas2DRenderer {
 
     ctx.save();
     
-    // Move to particle position
+    // Move to particle position and apply rotation
     ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
     
     const useTexture = settings.visual?.useTexture && this.texture;
     
