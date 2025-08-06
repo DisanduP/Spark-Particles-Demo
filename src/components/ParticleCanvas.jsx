@@ -92,6 +92,8 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
+    console.log(`Resizing canvas to: ${width}x${height}`);
+
     canvas.width = width;
     canvas.height = height;
     canvas.style.width = width + 'px';
@@ -191,10 +193,28 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
   // Resize handler
   useEffect(() => {
     const handleResize = () => {
+      console.log('Window resize event fired');
       resizeCanvas();
     };
 
     window.addEventListener('resize', handleResize);
+    
+    // Also use ResizeObserver to watch the canvas container
+    const canvas = canvasRef.current;
+    if (canvas && canvas.parentElement) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        console.log('Container resize observed');
+        resizeCanvas();
+      });
+      
+      resizeObserver.observe(canvas.parentElement);
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        resizeObserver.disconnect();
+      };
+    }
+    
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 

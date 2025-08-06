@@ -51,14 +51,18 @@ void main() {
   
   // Scale the particle based on size and lifecycle
   float sizeScale = mix(0.3, 1.0, 1.0 - v_life);
-  vec2 scaledPos = rotatedPos * size * sizeScale;
   
-  // Position in world space
-  vec2 worldPos = particlePos + scaledPos;
+  // Convert particle position to clip space coordinates (-1 to 1)
+  vec2 clipPos = (particlePos / u_resolution) * 2.0 - 1.0;
+  clipPos.y = -clipPos.y; // Flip Y to match screen coordinates
   
-  // Transform to clip space
-  vec3 transformed = u_transform * vec3(worldPos, 1.0);
-  vec2 clipSpace = ((transformed.xy / u_resolution) * 2.0 - 1.0) * vec2(1, -1);
+  // Calculate particle offset in pixels, then convert to clip space
+  vec2 particleOffset = rotatedPos * size * sizeScale;
   
-  gl_Position = vec4(clipSpace, 0.0, 1.0);
+  // Convert pixel offset to clip space, maintaining aspect ratio
+  vec2 clipOffset;
+  clipOffset.x = (particleOffset.x / u_resolution.x) * 2.0;
+  clipOffset.y = (particleOffset.y / u_resolution.y) * 2.0;
+  
+  gl_Position = vec4(clipPos + clipOffset, 0.0, 1.0);
 }

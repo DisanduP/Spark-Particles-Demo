@@ -197,8 +197,31 @@ export class ParticleManager {
   }
 
   setCanvasSize(width, height) {
+    const oldWidth = this.canvasWidth;
+    const oldHeight = this.canvasHeight;
+    
+    // Update canvas dimensions
     this.canvasWidth = width;
     this.canvasHeight = height;
+    
+    // Only rescale particles if we have a valid previous size and particles exist
+    if (oldWidth > 0 && oldHeight > 0 && this.particles.length > 0) {
+      const scaleX = width / oldWidth;
+      const scaleY = height / oldHeight;
+      
+      // Use the average scale to maintain velocity characteristics better
+      const avgScale = (scaleX + scaleY) / 2.0;
+      
+      // Rescale existing particle positions to maintain relative positioning
+      for (const particle of this.particles) {
+        particle.x *= scaleX;
+        particle.y *= scaleY;
+        
+        // Scale velocity proportionally but more conservatively to maintain movement feel
+        particle.vx *= avgScale;
+        particle.vy *= avgScale;
+      }
+    }
   }
 
   getParticles() {

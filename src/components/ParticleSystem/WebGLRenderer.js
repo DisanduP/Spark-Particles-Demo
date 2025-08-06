@@ -397,14 +397,12 @@ export class WebGLRenderer {
 
   resize() {
     const gl = this.gl;
-    const displayWidth = this.canvas.clientWidth;
-    const displayHeight = this.canvas.clientHeight;
     
-    if (this.canvas.width !== displayWidth || this.canvas.height !== displayHeight) {
-      this.canvas.width = displayWidth;
-      this.canvas.height = displayHeight;
-      gl.viewport(0, 0, displayWidth, displayHeight);
-    }
+    // Always update viewport to match current canvas size
+    // Don't modify canvas.width/height here - that's handled by the parent component
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    
+    console.log(`WebGL viewport resized to: ${this.canvas.width}x${this.canvas.height}`);
   }
 
   hexToRgb(hex) {
