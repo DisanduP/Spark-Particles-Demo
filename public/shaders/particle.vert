@@ -5,6 +5,7 @@ attribute float a_life;
 attribute float a_maxLife;
 attribute vec3 a_color;
 attribute float a_rotation;
+attribute float a_opacity;
 
 uniform vec2 u_resolution;
 uniform mat3 u_transform;
@@ -16,6 +17,7 @@ uniform float u_particleLife;
 uniform float u_particleMaxLife;
 uniform vec3 u_particleColor;
 uniform float u_particleRotation;
+uniform float u_particleOpacity;
 
 varying float v_life;
 varying float v_alpha;
@@ -30,13 +32,14 @@ void main() {
   float maxLife = a_maxLife != 0.0 ? a_maxLife : u_particleMaxLife;
   vec3 color = a_color != vec3(0.0) ? a_color : u_particleColor;
   float rotation = a_rotation != 0.0 ? a_rotation : u_particleRotation;
+  float opacity = a_opacity != 0.0 ? a_opacity : u_particleOpacity;
   
   // Pass color to fragment shader
   v_color = color;
   
-  // Calculate lifecycle alpha
+  // Use the opacity from gradient instead of calculating based on lifecycle
   v_life = life / maxLife;
-  v_alpha = smoothstep(0.0, 0.1, v_life) * (1.0 - smoothstep(0.7, 1.0, v_life));
+  v_alpha = opacity;
   
   // UV coordinates for the particle quad
   v_uv = a_position * 0.5 + 0.5;
@@ -49,8 +52,8 @@ void main() {
     a_position.x * sin_r + a_position.y * cos_r
   );
   
-  // Scale the particle based on size and lifecycle
-  float sizeScale = mix(0.3, 1.0, 1.0 - v_life);
+  // Use constant size (no lifecycle scaling)
+  float sizeScale = 1.0;
   
   // Convert particle position to clip space coordinates (-1 to 1)
   vec2 clipPos = (particlePos / u_resolution) * 2.0 - 1.0;

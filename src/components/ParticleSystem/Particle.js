@@ -1,3 +1,5 @@
+import { getRandomGradient, sampleGradient, sampleOpacityGradient, rgbToHex } from '../../utils/gradientUtils.js';
+
 export class Particle {
   constructor(x, y, settings) {
     this.x = x;
@@ -16,13 +18,12 @@ export class Particle {
     this.size = settings.particles.size.base - (Math.random() * sizeVariation);
     this.initialSize = this.size;
     
-    // Color selection - randomly pick one of the three colors
-    const colors = [
-      settings.visual.colors.color1,
-      settings.visual.colors.color2,
-      settings.visual.colors.color3
-    ];
-    this.color = colors[Math.floor(Math.random() * colors.length)];
+    // Gradient selection - randomly pick one of the three gradients
+    this.gradient = getRandomGradient(settings.visual.gradients);
+    // Start with initial color from gradient
+    this.color = rgbToHex(sampleGradient(this.gradient, 0));
+    // Start with initial opacity from opacity gradient
+    this.opacity = sampleOpacityGradient(settings.visual.opacityGradient, 0);
     
     // Rotation properties
     const rotationVariation = settings.particles.rotation.speed * settings.particles.rotation.randomVariation;
@@ -73,25 +74,20 @@ export class Particle {
     this.x += this.vx * deltaTime * 60; // Scale for 60fps equivalent
     this.y += this.vy * deltaTime * 60;
     
-    // Update size based on lifecycle
+    // Update size (constant throughout lifetime)
     const lifeRatio = this.life / this.maxLife;
-    this.size = this.initialSize * this.getSizeMultiplier(lifeRatio);
+    this.size = this.initialSize; // No size fading
+    
+    // Update color based on gradient and lifecycle
+    this.color = rgbToHex(sampleGradient(this.gradient, lifeRatio));
+    
+    // Update opacity based on opacity gradient and lifecycle
+    this.opacity = sampleOpacityGradient(settings.visual.opacityGradient, lifeRatio);
     
     // Update rotation
     this.rotation += this.rotationSpeed * deltaTime;
     
     return this;
-  }
-
-  getSizeMultiplier(lifeRatio) {
-    // Start small, grow quickly, then fade
-    if (lifeRatio < 0.1) {
-      return lifeRatio * 10; // Quick growth from 0 to 1
-    } else if (lifeRatio < 0.7) {
-      return 1.0; // Maintain size
-    } else {
-      return 1.0 - ((lifeRatio - 0.7) / 0.3); // Fade to 0
-    }
   }
 
   applyForce(fx, fy) {
@@ -143,16 +139,8 @@ export class Particle {
   }
 
   getAlpha() {
-    const lifeRatio = this.life / this.maxLife;
-    
-    // Fade in quickly, then fade out slowly
-    if (lifeRatio < 0.1) {
-      return lifeRatio * 10; // Quick fade in
-    } else if (lifeRatio < 0.7) {
-      return 1.0; // Full opacity
-    } else {
-      return 1.0 - ((lifeRatio - 0.7) / 0.3); // Slow fade out
-    }
+    // Return the opacity calculated from the opacity gradient
+    return this.opacity;
   }
 
   // Check if particle is within screen bounds (with margin)

@@ -3,28 +3,10 @@ import './ControlPanel.css';
 import { ConfigManagement } from './ConfigManagement.jsx';
 import { ControlHeader } from './ControlHeader.jsx';
 import { ControlSection } from './ControlSection.jsx';
+import GradientEditor from './GradientEditor.jsx';
+import OpacityGradientEditor from './OpacityGradientEditor.jsx';
 
-// Reusable component for color input
-const ColorInput = ({ label, value, path, onChange }) => {
-  const handleColorChange = (e) => {
-    onChange(path, e.target.value);
-  };
-
-  return (
-    <div className="control-group">
-      <label>{label}:</label>
-      <div className="color-input-container">
-        <input
-          type="color"
-          value={value}
-          onChange={handleColorChange}
-          className="color-input"
-        />
-        <span className="color-value">{value}</span>
-      </div>
-    </div>
-  );
-};
+// Reusable component for slider input with direct text editing
 
 // Reusable component for slider with text input
 const SliderInput = ({ label, value, min, max, step, path, onChange, formatDisplay }) => {
@@ -104,6 +86,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
 
   const handleSelectChange = (path, value) => {
     onSettingChange(path, value);
+  };
+
+  const handleGradientChange = (gradientKey, newGradient) => {
+    onSettingChange(`visual.gradients.${gradientKey}`, newGradient);
   };
 
   const handleShowPanel = () => {
@@ -232,29 +218,41 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
         </ControlSection>
 
         {/* Particle Appearance */}
-        <ControlSection title="Particle Appearance">
+        <ControlSection title="Particle Color Gradients">
           
-          <ColorInput
-            label="Particle Color 1"
-            value={settings.visual.colors.color1}
-            path="visual.colors.color1"
-            onChange={handleSelectChange}
+          <GradientEditor
+            label="Gradient 1"
+            gradient={settings.visual.gradients.gradient1}
+            gradientKey="gradient1"
+            onChange={handleGradientChange}
           />
           
-          <ColorInput
-            label="Particle Color 2"
-            value={settings.visual.colors.color2}
-            path="visual.colors.color2"
-            onChange={handleSelectChange}
+          <GradientEditor
+            label="Gradient 2"
+            gradient={settings.visual.gradients.gradient2}
+            gradientKey="gradient2"
+            onChange={handleGradientChange}
           />
           
-          <ColorInput
-            label="Particle Color 3"
-            value={settings.visual.colors.color3}
-            path="visual.colors.color3"
-            onChange={handleSelectChange}
+          <GradientEditor
+            label="Gradient 3"
+            gradient={settings.visual.gradients.gradient3}
+            gradientKey="gradient3"
+            onChange={handleGradientChange}
           />
+        </ControlSection>
 
+        {/* Opacity Gradient */}
+        <ControlSection title="Particle Opacity">
+          <OpacityGradientEditor
+            label="Opacity Over Lifetime"
+            gradient={settings.visual.opacityGradient}
+            onChange={handleSelectChange}
+          />
+        </ControlSection>
+
+        {/* Particle Size & Rotation */}
+        <ControlSection title="Particle Size & Rotation">
           <SliderInput
             label="Max Particle Size"
             value={settings.particles.size.base}

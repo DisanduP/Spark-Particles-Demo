@@ -64,11 +64,30 @@ export const DEFAULT_SETTINGS = {
       radius: 12.0,
       intensity: 0.2
     },
-    colors: {
-      color1: '#6800ff', // Purple
-      color2: '#371a94', // Dark purple
-      color3: '#3a88fe'  // Blue
-    }
+    gradients: {
+      gradient1: [
+        { position: 0.0, color: '#6800ff' },   // Purple start
+        { position: 0.5, color: '#a855f7' },   // Mid purple
+        { position: 1.0, color: '#ffffff' }    // White end
+      ],
+      gradient2: [
+        { position: 0.0, color: '#371a94' },   // Dark purple start
+        { position: 0.3, color: '#7c3aed' },   // Purple
+        { position: 0.7, color: '#a78bfa' },   // Light purple
+        { position: 1.0, color: '#fbbf24' }    // Golden end
+      ],
+      gradient3: [
+        { position: 0.0, color: '#3a88fe' },   // Blue start
+        { position: 0.6, color: '#06b6d4' },   // Cyan mid
+        { position: 1.0, color: '#10b981' }    // Green end
+      ]
+    },
+    opacityGradient: [
+      { position: 0.0, opacity: 0.0 },    // Fade in from transparent
+      { position: 0.1, opacity: 1.0 },    // Quick fade to full opacity
+      { position: 0.8, opacity: 1.0 },    // Stay at full opacity
+      { position: 1.0, opacity: 0.0 }     // Fade out at the end
+    ]
   },
 
   theme: {

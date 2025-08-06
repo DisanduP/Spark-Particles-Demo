@@ -36,18 +36,8 @@ void main() {
     shape = sparkleShape(v_uv);
   }
   
-  // Use the per-particle color instead of lifecycle-based colors
-  vec3 baseColor = v_color;
-  
-  // Create a slightly brighter center and darker edges based on particle lifecycle
-  vec3 color;
-  if (v_life > 0.7) {
-    // Fade to darker version at end of life
-    color = mix(baseColor * 0.5, baseColor, (v_life - 0.7) / 0.3);
-  } else {
-    // Brighten during prime life
-    color = mix(baseColor, baseColor * 1.5, v_life / 0.7);
-  }
+  // Use the per-particle color directly from gradient
+  vec3 color = v_color;
   
   if (!u_isDarkMode) {
     color = color * 0.8 + vec3(0.2);

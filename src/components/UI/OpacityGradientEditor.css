@@ -1,0 +1,260 @@
+.opacity-gradient-editor {
+  margin-bottom: 1rem;
+}
+
+.opacity-gradient-editor-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.opacity-gradient-preview {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.opacity-checkerboard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(45deg, #ccc 25%, transparent 25%), 
+    linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #ccc 75%), 
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+  z-index: 1;
+}
+
+.opacity-gradient-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+.opacity-gradient-timeline {
+  position: relative;
+  width: 100%;
+  height: 60px;
+  background: var(--control-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: crosshair;
+  margin-bottom: 0.5rem;
+  overflow: visible;
+}
+
+.timeline-markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.timeline-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-color);
+  opacity: 0.5;
+}
+
+.timeline-label {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.opacity-stop {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #333;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+  z-index: 50; /* Base z-index for stops */
+}
+
+.opacity-stop.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.2);
+  z-index: 75; /* Higher when dragging */
+}
+
+.stop-controls {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: var(--control-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 80px;
+  pointer-events: none; /* Prevent interference with dragging */
+  z-index: 100; /* Much higher to ensure it's above everything */
+}
+
+.stop-controls.visible {
+  opacity: 1;
+  pointer-events: auto; /* Re-enable when visible */
+}
+
+.stop-controls.visible * {
+  pointer-events: auto; /* Ensure all child elements are clickable */
+}
+
+.stop-opacity-input {
+  width: 60px;
+  height: 24px;
+  margin: 0;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--control-bg); /* Use theme variable */
+  color: var(--text-primary); /* Use theme variable */
+  font-size: 12px;
+  text-align: center;
+  pointer-events: auto !important; /* Force clickable with !important */
+  cursor: text !important;
+  outline: none;
+  position: relative;
+  z-index: 200; /* Even higher z-index to ensure it's on top */
+}
+
+.stop-opacity-input:focus {
+  border-color: #4a9eff;
+  background: var(--control-bg-hover, var(--control-bg)); /* Use hover variant if available */
+}
+
+.opacity-value {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.stop-remove-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: #ff4757;
+  color: white;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  margin-top: 2px;
+}
+
+.stop-remove-btn:hover {
+  background: #ff3742;
+}
+
+.stop-position {
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: var(--control-bg);
+  padding: 1px 3px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.stop-position.visible {
+  opacity: 1;
+}
+
+.opacity-gradient-instructions {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .opacity-stop {
+  border-color: #555;
+}
+
+[data-theme="dark"] .stop-opacity-input {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-color: #555;
+}
+
+[data-theme="dark"] .stop-opacity-input:focus {
+  border-color: #4a9eff;
+  background: #0a0a0a;
+}
+
+[data-theme="dark"] .opacity-checkerboard {
+  background-image: 
+    linear-gradient(45deg, #333 25%, transparent 25%), 
+    linear-gradient(-45deg, #333 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #333 75%), 
+    linear-gradient(-45deg, transparent 75%, #333 75%);
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .opacity-stop {
+  border-color: #ddd;
+}
+
+[data-theme="light"] .stop-opacity-input {
+  background: #ffffff;
+  color: #333333 !important; /* Dark text for light mode */
+  border-color: #ccc;
+}
+
+[data-theme="light"] .stop-opacity-input:focus {
+  border-color: #4a9eff;
+  background: #f9f9f9;
+  color: #333333 !important; /* Ensure dark text on focus too */
+}
+
+[data-theme="light"] .opacity-checkerboard {
+  background-image: 
+    linear-gradient(45deg, #eee 25%, transparent 25%), 
+    linear-gradient(-45deg, #eee 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #eee 75%), 
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
+}

@@ -15,6 +15,7 @@
 - [x] Child particle spawning
 - [x] JSON export/import functionality
 - [x] Shader loading from external files
+- [x] Opacity gradients based on lifecycle (replaced size fading)
 
 ### Core Features Working
 - [x] Particle rendering with WebGL
@@ -31,7 +32,7 @@
 - [ ] Particle trails rendering
 - [ ] Enhanced sparkle SVG rendering
 - [ ] Better particle size scaling
-- [ ] Color gradients based on lifecycle
+- [x] Color gradients based on lifecycle
 
 ### Physics Improvements
 - [ ] Additional force types (suction, directional, vortex)

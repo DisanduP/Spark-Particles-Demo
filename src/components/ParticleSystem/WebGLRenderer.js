@@ -174,7 +174,8 @@ export class WebGLRenderer {
       life: gl.getAttribLocation(this.program, 'a_life'),
       maxLife: gl.getAttribLocation(this.program, 'a_maxLife'),
       color: gl.getAttribLocation(this.program, 'a_color'),
-      rotation: gl.getAttribLocation(this.program, 'a_rotation')
+      rotation: gl.getAttribLocation(this.program, 'a_rotation'),
+      opacity: gl.getAttribLocation(this.program, 'a_opacity')
     };
     
     // Uniforms
@@ -221,6 +222,7 @@ export class WebGLRenderer {
     this.buffers.maxLife = gl.createBuffer();
     this.buffers.color = gl.createBuffer();
     this.buffers.rotation = gl.createBuffer();
+    this.buffers.opacity = gl.createBuffer();
   }
 
   updateParticleData(particles) {
@@ -236,6 +238,7 @@ export class WebGLRenderer {
     const maxLives = new Float32Array(particleCount);
     const colors = new Float32Array(particleCount * 3); // RGB values
     const rotations = new Float32Array(particleCount);
+    const opacities = new Float32Array(particleCount);
     
     // Fill arrays with particle data
     for (let i = 0; i < particleCount; i++) {
@@ -246,6 +249,7 @@ export class WebGLRenderer {
       lives[i] = particle.life;
       maxLives[i] = particle.maxLife;
       rotations[i] = particle.rotation;
+      opacities[i] = particle.opacity;
       
       // Convert hex color to RGB
       const rgb = this.hexToRgb(particle.color);
@@ -272,6 +276,9 @@ export class WebGLRenderer {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.rotation);
     gl.bufferData(gl.ARRAY_BUFFER, rotations, gl.DYNAMIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.opacity);
+    gl.bufferData(gl.ARRAY_BUFFER, opacities, gl.DYNAMIC_DRAW);
   }
 
   render(particles, settings) {
@@ -368,6 +375,12 @@ export class WebGLRenderer {
     gl.enableVertexAttribArray(this.attributes.rotation);
     gl.vertexAttribPointer(this.attributes.rotation, 1, gl.FLOAT, false, 0, 0);
     this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.rotation, 1);
+    
+    // Particle opacity (instanced)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.opacity);
+    gl.enableVertexAttribArray(this.attributes.opacity);
+    gl.vertexAttribPointer(this.attributes.opacity, 1, gl.FLOAT, false, 0, 0);
+    this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.opacity, 1);
   }
 
   setupBasicRendering() {
