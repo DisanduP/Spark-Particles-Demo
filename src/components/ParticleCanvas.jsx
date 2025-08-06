@@ -4,7 +4,7 @@ import { ParticleManager } from './ParticleSystem/ParticleManager.js';
 import { ConfigManager } from './Config/ConfigManager.js';
 import sparkleUrl from '../assets/sparkle.svg';
 
-export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
+export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   const canvasRef = useRef(null);
   const rendererRef = useRef(null);
   const particleManagerRef = useRef(null);
@@ -278,15 +278,16 @@ export const ParticleCanvas = ({ onSettingsChange, onReady }) => {
         position: 'absolute',
         top: '10px',
         left: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
+        background: settings?.theme?.mode === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
+        color: settings?.theme?.mode === 'light' ? '#333333' : 'white',
         padding: '8px 12px',
         borderRadius: '6px',
         fontSize: '12px',
         fontFamily: 'monospace',
         pointerEvents: 'none',
         lineHeight: '1.4',
-        minWidth: '220px'
+        minWidth: '220px',
+        border: settings?.theme?.mode === 'light' ? '1px solid rgba(0,0,0,0.1)' : 'none'
       }}>
         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>System Status</div>
         <div>Renderer: {statusInfo.renderer}</div>

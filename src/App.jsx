@@ -22,12 +22,13 @@ function App() {
   }, []);
 
   return (
-    <div className="app">
+    <div className={`app ${settings?.theme?.mode || 'dark'}`}>
       <div className="canvas-wrapper">
         <div className="canvas-container">
           <ParticleCanvas 
             onSettingsChange={handleSettingsChange}
             onReady={handleCanvasReady}
+            settings={settings}
           />
         </div>
       </div>

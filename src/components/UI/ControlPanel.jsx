@@ -93,6 +93,8 @@ const SliderInput = ({ label, value, min, max, step, path, onChange, formatDispl
 
 export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  
   const handleSliderChange = (path, value) => {
     onSettingChange(path, parseFloat(value));
   };
@@ -136,11 +138,18 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
     }
   };
 
+  const handleShowPanel = () => {
+    setHasBeenVisible(true);
+    setIsVisible(true);
+  };
+
   if (!settings) return null;
 
   return (
     <>
-      <div className={`control-panel ${settings.theme.mode} ${isVisible ? 'visible' : 'hidden'}`}>
+      {/* Only render the panel after it has been shown at least once */}
+      {hasBeenVisible && (
+        <div className={`control-panel ${settings.theme.mode} ${isVisible ? 'visible' : 'hidden'}`}>
         <div className="control-header">
           <h3>Particle Controls</h3>
           <div className="control-actions">
@@ -519,12 +528,13 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
         </section>
       </div>
     </div>
+      )}
     
     {/* Show tab when panel is hidden */}
     {!isVisible && (
       <div 
         className={`control-tab ${settings.theme.mode}`}
-        onClick={() => setIsVisible(true)}
+        onClick={handleShowPanel}
         title="Show controls"
       >
         <span>⚙️</span>
