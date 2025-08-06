@@ -177,7 +177,8 @@ export class WebGLRenderer {
       maxLife: gl.getAttribLocation(this.program, 'a_maxLife'),
       color: gl.getAttribLocation(this.program, 'a_color'),
       rotation: gl.getAttribLocation(this.program, 'a_rotation'),
-      opacity: gl.getAttribLocation(this.program, 'a_opacity')
+      opacity: gl.getAttribLocation(this.program, 'a_opacity'),
+      glowIntensity: gl.getAttribLocation(this.program, 'a_glowIntensity')
     };
     
     // Uniforms
@@ -195,7 +196,9 @@ export class WebGLRenderer {
       particleLife: gl.getUniformLocation(this.program, 'u_particleLife'),
       particleMaxLife: gl.getUniformLocation(this.program, 'u_particleMaxLife'),
       particleColor: gl.getUniformLocation(this.program, 'u_particleColor'),
-      particleRotation: gl.getUniformLocation(this.program, 'u_particleRotation')
+      particleRotation: gl.getUniformLocation(this.program, 'u_particleRotation'),
+      particleOpacity: gl.getUniformLocation(this.program, 'u_particleOpacity'),
+      particleGlowIntensity: gl.getUniformLocation(this.program, 'u_particleGlowIntensity')
     };
   }
 
@@ -225,6 +228,7 @@ export class WebGLRenderer {
     this.buffers.color = gl.createBuffer();
     this.buffers.rotation = gl.createBuffer();
     this.buffers.opacity = gl.createBuffer();
+    this.buffers.glowIntensity = gl.createBuffer();
   }
 
   updateParticleData(particles) {
@@ -241,6 +245,7 @@ export class WebGLRenderer {
     const colors = new Float32Array(particleCount * 3); // RGB values
     const rotations = new Float32Array(particleCount);
     const opacities = new Float32Array(particleCount);
+    const glowIntensities = new Float32Array(particleCount);
     
     // Fill arrays with particle data
     for (let i = 0; i < particleCount; i++) {
@@ -252,6 +257,7 @@ export class WebGLRenderer {
       maxLives[i] = particle.maxLife;
       rotations[i] = particle.rotation;
       opacities[i] = particle.opacity;
+      glowIntensities[i] = particle.speedBasedGlow;
       
       // Convert hex color to RGB
       const rgb = hexToRgb(particle.color);
@@ -281,6 +287,9 @@ export class WebGLRenderer {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.opacity);
     gl.bufferData(gl.ARRAY_BUFFER, opacities, gl.DYNAMIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.glowIntensity);
+    gl.bufferData(gl.ARRAY_BUFFER, glowIntensities, gl.DYNAMIC_DRAW);
   }
 
   render(particles, settings) {
@@ -303,6 +312,11 @@ export class WebGLRenderer {
     gl.uniform3f(this.uniforms.color, 1.0, 0.8, 0.3); // Default ember color
     gl.uniform1f(this.uniforms.glowIntensity, settings.visual.glow.intensity);
     gl.uniform1i(this.uniforms.isDarkMode, settings.theme.mode === 'dark' ? 1 : 0);
+    
+    // Set fallback uniforms for non-instanced rendering
+    if (this.uniforms.particleGlowIntensity) {
+      gl.uniform1f(this.uniforms.particleGlowIntensity, 0.0);
+    }
     
     // Set texture uniforms
     const useTexture = settings.visual?.useTexture || false;
@@ -381,6 +395,14 @@ export class WebGLRenderer {
     gl.enableVertexAttribArray(this.attributes.opacity);
     gl.vertexAttribPointer(this.attributes.opacity, 1, gl.FLOAT, false, 0, 0);
     this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.opacity, 1);
+    
+    // Particle glow intensity (instanced)
+    if (this.attributes.glowIntensity >= 0) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.glowIntensity);
+      gl.enableVertexAttribArray(this.attributes.glowIntensity);
+      gl.vertexAttribPointer(this.attributes.glowIntensity, 1, gl.FLOAT, false, 0, 0);
+      this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.glowIntensity, 1);
+    }
   }
 
   setupBasicRendering() {
@@ -401,6 +423,12 @@ export class WebGLRenderer {
     gl.uniform1f(this.uniforms.particleLife, particle.life);
     gl.uniform1f(this.uniforms.particleMaxLife, particle.maxLife);
     gl.uniform1f(this.uniforms.particleRotation, particle.rotation);
+    if (this.uniforms.particleOpacity) {
+      gl.uniform1f(this.uniforms.particleOpacity, particle.opacity);
+    }
+    if (this.uniforms.particleGlowIntensity) {
+      gl.uniform1f(this.uniforms.particleGlowIntensity, particle.speedBasedGlow);
+    }
     
     // Set particle color
     const rgb = hexToRgb(particle.color);

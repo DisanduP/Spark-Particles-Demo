@@ -40,6 +40,10 @@ export class Particle {
     
     // Physics
     this.mass = 1.0;
+    
+    // Speed tracking for glow effects
+    this.speed = 0;
+    this.speedBasedGlow = 0;
     this.noiseOffset = Math.random() * 1000; // Unique noise offset for this particle
   }
 
@@ -73,6 +77,18 @@ export class Particle {
     // Update position
     this.x += this.vx * deltaTime * 60; // Scale for 60fps equivalent
     this.y += this.vy * deltaTime * 60;
+    
+    // Calculate current speed for glow effects
+    this.speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy) * 60; // Scale to match position scaling
+    
+    // Calculate speed-based glow intensity
+    if (settings.visual.glow.speedBased.enabled && this.speed > settings.visual.glow.speedBased.minSpeedThreshold) {
+      // Normalize speed above threshold (0 = threshold, 1 = very fast)
+      const normalizedSpeed = Math.min((this.speed - settings.visual.glow.speedBased.minSpeedThreshold) / 200, 1.0);
+      this.speedBasedGlow = normalizedSpeed * settings.visual.glow.speedBased.maxIntensity;
+    } else {
+      this.speedBasedGlow = 0;
+    }
     
     // Calculate lifecycle ratio for gradients
     const lifeRatio = this.life / this.maxLife;

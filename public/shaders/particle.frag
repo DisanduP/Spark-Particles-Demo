@@ -4,6 +4,7 @@ varying float v_life;
 varying float v_alpha;
 varying vec2 v_uv;
 varying vec3 v_color;
+varying float v_glowIntensity;
 
 uniform vec3 u_color;
 uniform float u_glowIntensity;
@@ -46,7 +47,10 @@ void main() {
   }
   
   float finalAlpha = shape * v_alpha;
-  color += vec3(u_glowIntensity * 0.3) * shape;
+  
+  // Use per-particle glow intensity combined with global glow intensity
+  float totalGlowIntensity = u_glowIntensity + v_glowIntensity;
+  color += vec3(totalGlowIntensity * 0.3) * shape;
   
   gl_FragColor = vec4(color, finalAlpha);
 }

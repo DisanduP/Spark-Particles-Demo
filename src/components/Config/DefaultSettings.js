@@ -62,7 +62,12 @@ export const DEFAULT_SETTINGS = {
     },
     glow: {
       radius: 12.0,
-      intensity: 0.0
+      intensity: 0.0,
+      speedBased: {
+        enabled: true,
+        maxIntensity: 2.0,
+        minSpeedThreshold: 50.0 // Minimum speed to start applying glow
+      }
     },
     gradients: {
       gradient1: [

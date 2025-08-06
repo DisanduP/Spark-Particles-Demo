@@ -455,6 +455,49 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(1)}
           />
+          
+          <div style={{ marginTop: '15px' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              <input
+                type="checkbox"
+                checked={settings.visual.glow.speedBased.enabled}
+                onChange={(e) => onSettingChange('visual.glow.speedBased.enabled', e.target.checked)}
+              />
+              Speed-Based Glow
+            </label>
+          </div>
+          
+          {settings.visual.glow.speedBased.enabled && (
+            <>
+              <SliderInput
+                label="Max Speed Glow Intensity"
+                value={settings.visual.glow.speedBased.maxIntensity}
+                min={0}
+                max={5}
+                step={0.1}
+                path="visual.glow.speedBased.maxIntensity"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+              
+              <SliderInput
+                label="Min Speed Threshold"
+                value={settings.visual.glow.speedBased.minSpeedThreshold}
+                min={0}
+                max={200}
+                step={5}
+                path="visual.glow.speedBased.minSpeedThreshold"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)} px/s`}
+              />
+            </>
+          )}
         </ControlSection>
 
         {/* Config Management */}

@@ -6,6 +6,7 @@ attribute float a_maxLife;
 attribute vec3 a_color;
 attribute float a_rotation;
 attribute float a_opacity;
+attribute float a_glowIntensity;
 
 uniform vec2 u_resolution;
 uniform mat3 u_transform;
@@ -18,11 +19,13 @@ uniform float u_particleMaxLife;
 uniform vec3 u_particleColor;
 uniform float u_particleRotation;
 uniform float u_particleOpacity;
+uniform float u_particleGlowIntensity;
 
 varying float v_life;
 varying float v_alpha;
 varying vec2 v_uv;
 varying vec3 v_color;
+varying float v_glowIntensity;
 
 void main() {
   // Use instanced attributes if available, otherwise use uniforms
@@ -33,9 +36,12 @@ void main() {
   vec3 color = a_color != vec3(0.0) ? a_color : u_particleColor;
   float rotation = a_rotation != 0.0 ? a_rotation : u_particleRotation;
   float opacity = a_opacity != 0.0 ? a_opacity : u_particleOpacity;
+  // For glow intensity, always use attribute if instanced rendering, otherwise use uniform
+  float glowIntensity = a_glowIntensity >= 0.0 ? a_glowIntensity : u_particleGlowIntensity;
   
-  // Pass color to fragment shader
+  // Pass color and glow intensity to fragment shader
   v_color = color;
+  v_glowIntensity = glowIntensity;
   
   // Use the opacity from gradient instead of calculating based on lifecycle
   v_life = life / maxLife;
