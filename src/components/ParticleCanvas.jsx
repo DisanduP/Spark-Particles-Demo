@@ -119,11 +119,15 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       }
 
       if (particleManagerRef.current && rendererRef.current && configManagerRef.current) {
+        // Get current settings to determine shader mode
+        const settings = configManagerRef.current.getSettings();
+        
+        // Update particle manager with current settings
+        particleManagerRef.current.updateSettings(settings);
+        
         // Update particles
         particleManagerRef.current.update(clampedDelta, currentTime / 1000);
         
-        // Get current settings to determine shader mode
-        const settings = configManagerRef.current.getSettings();
         const particles = particleManagerRef.current.getParticles();
         
         // Update status info

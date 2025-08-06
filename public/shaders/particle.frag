@@ -39,11 +39,11 @@ void main() {
   // Use the per-particle color directly from gradient
   vec3 color = v_color;
   
+  // Apply theme-based color adjustment only for light mode
   if (!u_isDarkMode) {
-    color = color * 0.8 + vec3(0.2);
+    // Slightly darken colors in light mode for better visibility
+    color = color * 0.9;
   }
-  
-  color = mix(color, u_color, 0.3);
   
   float finalAlpha = shape * v_alpha;
   color += vec3(u_glowIntensity * 0.3) * shape;
