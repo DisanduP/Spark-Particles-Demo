@@ -140,11 +140,6 @@ export class Particle {
     return this.life >= this.maxLife;
   }
 
-  getAlpha() {
-    // Return the opacity calculated from the opacity gradient
-    return this.opacity;
-  }
-
   // Check if particle is within screen bounds (with margin)
   isOnScreen(width, height, margin = 100) {
     return this.x > -margin && 

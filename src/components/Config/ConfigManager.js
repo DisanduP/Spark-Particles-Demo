@@ -103,7 +103,7 @@ export class ConfigManager {
   }
 
   // Validate settings structure
-  validateSettings(settings = this.settings) {
+  validateSettings() {
     const required = [
       'particles.maxCount',
       'particles.spawnRate',

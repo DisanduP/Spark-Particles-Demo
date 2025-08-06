@@ -26,11 +26,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   });
 
   useEffect(() => {
-    initializeSystem();
-    return cleanup;
-  }, []);
-
-  const initializeSystem = async () => {
+    const initializeSystem = async () => {
     try {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -57,20 +53,19 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       } catch (error) {
         console.warn('Failed to load sparkle texture, falling back to procedural rendering:', error);
         // Update settings to disable texture usage if loading failed
-        const currentSettings = configManagerRef.current.getSettings();
         configManagerRef.current.updateSetting('visual.useTexture', false);
       }
 
       // Set up canvas size
       resizeCanvas();
       
-      // Subscribe to settings changes
-      if (onSettingsChange) {
-        configManagerRef.current.subscribe((path, value, allSettings) => {
-          particleManagerRef.current?.updateSettings(allSettings);
+            // Subscribe to config changes
+      configManagerRef.current.subscribe((path, value, allSettings) => {
+        // Notify parent component of settings changes
+        if (onSettingsChange) {
           onSettingsChange(allSettings);
-        });
-      }
+        }
+      });
 
       // Start render loop
       startRenderLoop();
@@ -80,7 +75,11 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       console.error('Failed to initialize particle system:', err);
       setError(err.message);
     }
-  };
+    };
+
+    initializeSystem();
+    return cleanup;
+  }, [onSettingsChange]);
 
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
@@ -200,7 +199,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     // Also use ResizeObserver to watch the canvas container
     const canvas = canvasRef.current;
     if (canvas && canvas.parentElement) {
-      const resizeObserver = new ResizeObserver((entries) => {
+      const resizeObserver = new ResizeObserver(() => {
         resizeCanvas();
       });
       

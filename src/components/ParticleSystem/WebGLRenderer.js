@@ -1,3 +1,5 @@
+import { hexToRgb } from '../../utils/gradientUtils.js';
+
 export class WebGLRenderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -252,7 +254,7 @@ export class WebGLRenderer {
       opacities[i] = particle.opacity;
       
       // Convert hex color to RGB
-      const rgb = this.hexToRgb(particle.color);
+      const rgb = hexToRgb(particle.color);
       colors[i * 3] = rgb.r;
       colors[i * 3 + 1] = rgb.g;
       colors[i * 3 + 2] = rgb.b;
@@ -287,11 +289,9 @@ export class WebGLRenderer {
     if (!this.program || particles.length === 0) return;
     
     // Clear canvas
-    const bgColor = settings.theme.mode === 'dark' 
-      ? this.hexToRgb(settings.theme.backgroundColor.dark)
-      : this.hexToRgb(settings.theme.backgroundColor.light);
-    
-    gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
+    const bgColor = settings.theme.mode === 'dark'
+      ? hexToRgb(settings.theme.backgroundColor.dark)
+      : hexToRgb(settings.theme.backgroundColor.light);    gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
     // Use shader program
@@ -319,7 +319,7 @@ export class WebGLRenderer {
     
     // Setup instanced rendering
     if (this.instancedArraysExt) {
-      this.setupInstancedRendering(particles.length);
+      this.setupInstancedRendering();
       // Draw
       this.instancedArraysExt.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, 6, particles.length);
     } else {
@@ -332,7 +332,7 @@ export class WebGLRenderer {
     }
   }
 
-  setupInstancedRendering(instanceCount) {
+  setupInstancedRendering() {
     const gl = this.gl;
     
     // Vertex positions (quad)
@@ -403,7 +403,7 @@ export class WebGLRenderer {
     gl.uniform1f(this.uniforms.particleRotation, particle.rotation);
     
     // Set particle color
-    const rgb = this.hexToRgb(particle.color);
+    const rgb = hexToRgb(particle.color);
     gl.uniform3f(this.uniforms.particleColor, rgb.r, rgb.g, rgb.b);
   }
 
@@ -413,13 +413,6 @@ export class WebGLRenderer {
     // Always update viewport to match current canvas size
     // Don't modify canvas.width/height here - that's handled by the parent component
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  hexToRgb(hex) {
-    const r = parseInt(hex.slice(1, 3), 16) / 255;
-    const g = parseInt(hex.slice(3, 5), 16) / 255;
-    const b = parseInt(hex.slice(5, 7), 16) / 255;
-    return { r, g, b };
   }
 
   dispose() {

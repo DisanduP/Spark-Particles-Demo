@@ -15,11 +15,11 @@ export class ParticleManager {
     this.canvasHeight = 600;
   }
 
-  update(deltaTime, currentTime) {
+  update(deltaTime) {
     this.timeAccumulator += deltaTime;
     
     // Spawn new particles based on spawn rate
-    this.spawnParticles(deltaTime);
+    this.spawnParticles();
     
     // Update existing particles
     this.updateParticles(deltaTime);
@@ -31,7 +31,7 @@ export class ParticleManager {
     this.spawnChildParticles();
   }
 
-  spawnParticles(deltaTime) {
+  spawnParticles() {
     const spawnInterval = 1.0 / this.settings.particles.spawnRate;
     
     while (this.timeAccumulator >= spawnInterval && 

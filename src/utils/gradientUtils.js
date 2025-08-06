@@ -100,36 +100,6 @@ export function getRandomGradient(gradients) {
 }
 
 /**
- * Validate a gradient stop
- * @param {object} stop - Gradient stop {position, color}
- * @returns {boolean} Whether the stop is valid
- */
-export function isValidGradientStop(stop) {
-  return (
-    stop &&
-    typeof stop.position === 'number' &&
-    stop.position >= 0 &&
-    stop.position <= 1 &&
-    typeof stop.color === 'string' &&
-    /^#[0-9A-F]{6}$/i.test(stop.color)
-  );
-}
-
-/**
- * Validate an entire gradient
- * @param {Array} gradient - Array of gradient stops
- * @returns {boolean} Whether the gradient is valid
- */
-export function isValidGradient(gradient) {
-  return (
-    Array.isArray(gradient) &&
-    gradient.length >= 2 &&
-    gradient.length <= 5 &&
-    gradient.every(isValidGradientStop)
-  );
-}
-
-/**
  * Sample an opacity value from an opacity gradient at a specific position
  * @param {Array} opacityGradient - Array of opacity stops {position, opacity}
  * @param {number} position - Position along gradient (0-1)
@@ -168,35 +138,4 @@ export function sampleOpacityGradient(opacityGradient, position) {
   
   // Interpolate between the two opacity values
   return leftStop.opacity + (rightStop.opacity - leftStop.opacity) * t;
-}
-
-/**
- * Validate an opacity gradient stop
- * @param {object} stop - Opacity stop {position, opacity}
- * @returns {boolean} Whether the stop is valid
- */
-export function isValidOpacityStop(stop) {
-  return (
-    stop &&
-    typeof stop.position === 'number' &&
-    stop.position >= 0 &&
-    stop.position <= 1 &&
-    typeof stop.opacity === 'number' &&
-    stop.opacity >= 0 &&
-    stop.opacity <= 1
-  );
-}
-
-/**
- * Validate an entire opacity gradient
- * @param {Array} opacityGradient - Array of opacity stops
- * @returns {boolean} Whether the opacity gradient is valid
- */
-export function isValidOpacityGradient(opacityGradient) {
-  return (
-    Array.isArray(opacityGradient) &&
-    opacityGradient.length >= 2 &&
-    opacityGradient.length <= 5 &&
-    opacityGradient.every(isValidOpacityStop)
-  );
 }

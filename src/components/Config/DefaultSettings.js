@@ -95,26 +95,3 @@ export const DEFAULT_SETTINGS = {
     uiPanelOpacity: 0.9
   }
 };
-
-export const PERFORMANCE_PRESETS = {
-  low: {
-    maxParticles: 200,
-    trailLength: 10,
-    bloomQuality: 'low'
-  },
-  medium: {
-    maxParticles: 500,
-    trailLength: 15,
-    bloomQuality: 'medium'
-  },
-  high: {
-    maxParticles: 1000,
-    trailLength: 20,
-    bloomQuality: 'high'
-  },
-  ultra: {
-    maxParticles: 2000,
-    trailLength: 30,
-    bloomQuality: 'ultra'
-  }
-};
