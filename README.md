@@ -1,4 +1,4 @@
-# WebGL Fire Ember Particle System
+# Spark Particle Prototype
 
 A playground for building a WebGL-based particle system that simulates fire embers with interactive controls, built for prototyping and eventual integration into React applications.
 
