@@ -23,11 +23,13 @@ function App() {
 
   return (
     <div className="app">
-      <div className="canvas-container">
-        <ParticleCanvas 
-          onSettingsChange={handleSettingsChange}
-          onReady={handleCanvasReady}
-        />
+      <div className="canvas-wrapper">
+        <div className="canvas-container">
+          <ParticleCanvas 
+            onSettingsChange={handleSettingsChange}
+            onReady={handleCanvasReady}
+          />
+        </div>
       </div>
       
       {settings && (

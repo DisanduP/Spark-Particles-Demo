@@ -92,7 +92,7 @@ const SliderInput = ({ label, value, min, max, step, path, onChange, formatDispl
 };
 
 export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const handleSliderChange = (path, value) => {
     onSettingChange(path, parseFloat(value));
   };
