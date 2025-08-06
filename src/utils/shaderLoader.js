@@ -40,16 +40,3 @@ export async function loadShaderFiles(vertexPath, fragmentPath) {
     throw new Error(`Failed to load shader files: ${error.message}`);
   }
 }
-
-/**
- * Load the default particle shaders
- * @returns {Promise<{vertexSource: string, fragmentSource: string}>}
- */
-export async function loadParticleShaders() {
-  const basePath = import.meta.env.BASE_URL;
-  const normalizedBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-  return loadShaderFiles(
-    `${normalizedBasePath}shaders/particle.vert`, 
-    `${normalizedBasePath}shaders/particle.frag`
-  );
-}

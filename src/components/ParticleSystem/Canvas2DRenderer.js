@@ -55,7 +55,6 @@ export class Canvas2DRenderer {
             // Clean up blob URL
             URL.revokeObjectURL(url);
             
-            console.log('Canvas 2D texture created successfully from SVG');
             resolve(textureCanvas);
           } catch (error) {
             URL.revokeObjectURL(url);
@@ -233,7 +232,6 @@ export class Canvas2DRenderer {
     this.gradientCache.clear();
     
     // Canvas 2D doesn't have resources to dispose like WebGL
-    console.log('Canvas 2D renderer disposed');
   }
 
   // Getter for compatibility with WebGL renderer interface

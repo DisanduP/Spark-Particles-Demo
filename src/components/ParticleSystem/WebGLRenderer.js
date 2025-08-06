@@ -140,7 +140,6 @@ export class WebGLRenderer {
             // Clean up blob URL
             URL.revokeObjectURL(url);
             
-            console.log('Texture created successfully from SVG with ultra-high quality antialiasing (1024x1024 with 4x supersampling)');
             resolve(texture);
           } catch (error) {
             URL.revokeObjectURL(url);
@@ -401,8 +400,6 @@ export class WebGLRenderer {
     // Always update viewport to match current canvas size
     // Don't modify canvas.width/height here - that's handled by the parent component
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-    
-    console.log(`WebGL viewport resized to: ${this.canvas.width}x${this.canvas.height}`);
   }
 
   hexToRgb(hex) {

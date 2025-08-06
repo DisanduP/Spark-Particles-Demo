@@ -53,9 +53,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
 
       // Load sparkle texture
       try {
-        console.log('Loading sparkle texture from:', sparkleUrl);
         await rendererRef.current.loadSVGAsTexture(sparkleUrl);
-        console.log('Sparkle texture loaded successfully');
       } catch (error) {
         console.warn('Failed to load sparkle texture, falling back to procedural rendering:', error);
         // Update settings to disable texture usage if loading failed
@@ -89,21 +87,22 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     if (!canvas) return;
 
     const container = canvas.parentElement;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    if (!container) return;
 
-    console.log(`Resizing canvas to: ${width}x${height}`);
-
+    const { width, height } = container.getBoundingClientRect();
+    
+    // Set canvas size
     canvas.width = width;
     canvas.height = height;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-
-    rendererRef.current?.resize();
-    particleManagerRef.current?.setCanvasSize(width, height);
-  };
-
-  const startRenderLoop = () => {
+    
+    if (rendererRef.current) {
+      rendererRef.current.resize();
+    }
+    
+    if (particleManagerRef.current) {
+      particleManagerRef.current.setCanvasSize(width, height);
+    }
+  };  const startRenderLoop = () => {
     const render = (currentTime) => {
       const deltaTime = (currentTime - lastTimeRef.current) / 1000; // Convert to seconds
       lastTimeRef.current = currentTime;
@@ -193,7 +192,6 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   // Resize handler
   useEffect(() => {
     const handleResize = () => {
-      console.log('Window resize event fired');
       resizeCanvas();
     };
 
@@ -203,7 +201,6 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     const canvas = canvasRef.current;
     if (canvas && canvas.parentElement) {
       const resizeObserver = new ResizeObserver((entries) => {
-        console.log('Container resize observed');
         resizeCanvas();
       });
       

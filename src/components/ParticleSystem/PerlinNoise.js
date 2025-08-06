@@ -149,25 +149,4 @@ export class PerlinNoise {
   updateSettings(newSettings) {
     this.settings = newSettings;
   }
-
-  // Visualize noise field (for debugging)
-  getNoiseGrid(width, height, time, resolution = 20) {
-    const grid = [];
-    const stepX = width / resolution;
-    const stepY = height / resolution;
-    
-    for (let y = 0; y < height; y += stepY) {
-      for (let x = 0; x < width; x += stepX) {
-        const force = this.getForceAt(x, y, time);
-        grid.push({
-          x,
-          y,
-          fx: force.x * 50, // Scale for visualization
-          fy: force.y * 50
-        });
-      }
-    }
-    
-    return grid;
-  }
 }

@@ -235,23 +235,4 @@ export class ParticleManager {
   clear() {
     this.particles = [];
   }
-
-  // Debug methods
-  getDebugInfo() {
-    return {
-      particleCount: this.particles.length,
-      maxParticles: this.settings.particles.maxCount,
-      spawnRate: this.settings.particles.spawnRate,
-      timeAccumulator: this.timeAccumulator.toFixed(3)
-    };
-  }
-
-  getNoiseVisualization(resolution = 20) {
-    return this.perlinNoise.getNoiseGrid(
-      this.canvasWidth, 
-      this.canvasHeight, 
-      this.timeAccumulator, 
-      resolution
-    );
-  }
 }
