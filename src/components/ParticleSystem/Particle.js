@@ -74,15 +74,17 @@ export class Particle {
     this.x += this.vx * deltaTime * 60; // Scale for 60fps equivalent
     this.y += this.vy * deltaTime * 60;
     
-    // Update size (constant throughout lifetime)
+    // Calculate lifecycle ratio for gradients
     const lifeRatio = this.life / this.maxLife;
-    this.size = this.initialSize; // No size fading
     
     // Update color based on gradient and lifecycle
     this.color = rgbToHex(sampleGradient(this.gradient, lifeRatio));
     
     // Update opacity based on opacity gradient and lifecycle
     this.opacity = sampleOpacityGradient(settings.visual.opacityGradient, lifeRatio);
+    
+    // Update size based on opacity: 0% opacity = 0 size, 100% opacity = initial size
+    this.size = this.initialSize * this.opacity;
     
     // Update rotation
     this.rotation += this.rotationSpeed * deltaTime;
