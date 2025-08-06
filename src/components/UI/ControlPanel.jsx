@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import './ControlPanel.css';
+import { ConfigManagement } from './ConfigManagement.jsx';
+import { ControlHeader } from './ControlHeader.jsx';
+import { ControlSection } from './ControlSection.jsx';
 
 // Reusable component for color input
 const ColorInput = ({ label, value, path, onChange }) => {
@@ -103,41 +106,6 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
     onSettingChange(path, value);
   };
 
-  const handleExport = () => {
-    if (configManager) {
-      const json = configManager.exportToJSON();
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `particle-config-${new Date().getTime()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
-  const handleImport = (event) => {
-    const file = event.target.files[0];
-    if (file && configManager) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const success = configManager.loadFromJSON(e.target.result);
-        if (!success) {
-          alert('Failed to load configuration file');
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  const handleReset = () => {
-    if (configManager && confirm('Reset all settings to defaults?')) {
-      configManager.resetToDefaults();
-    }
-  };
-
   const handleShowPanel = () => {
     setHasBeenVisible(true);
     setIsVisible(true);
@@ -150,26 +118,15 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
       {/* Only render the panel after it has been shown at least once */}
       {hasBeenVisible && (
         <div className={`control-panel ${settings.theme.mode} ${isVisible ? 'visible' : 'hidden'}`}>
-        <div className="control-header">
-          <h3>Particle Controls</h3>
-          <div className="control-actions">
-            <button onClick={() => onSettingChange('theme.mode', settings.theme.mode === 'dark' ? 'light' : 'dark')}>
-              {settings.theme.mode === 'dark' ? '☀️' : '🌙'}
-            </button>
-            <button 
-              className="hide-button" 
-              onClick={() => setIsVisible(false)}
-              title="Hide controls"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
+        <ControlHeader 
+          settings={settings}
+          onSettingChange={onSettingChange}
+          onHide={() => setIsVisible(false)}
+        />
 
       <div className="control-sections">
         {/* Particle Behavior */}
-        <section>
-          <h4>Particle Behavior</h4>
+        <ControlSection title="Particle Behavior">
           
           <SliderInput
             label="Max Particles"
@@ -224,11 +181,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(2)}
           />
-        </section>
+        </ControlSection>
 
         {/* Spawn Area */}
-        <section>
-          <h4>Spawn Area</h4>
+        <ControlSection title="Spawn Area">
           
           <SliderInput
             label="Spawn X Min"
@@ -273,11 +229,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
           />
-        </section>
+        </ControlSection>
 
         {/* Particle Appearance */}
-        <section>
-          <h4>Particle Appearance</h4>
+        <ControlSection title="Particle Appearance">
           
           <ColorInput
             label="Particle Color 1"
@@ -343,11 +298,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => `${(val * 100).toFixed(0)}%`}
           />
-        </section>
+        </ControlSection>
 
         {/* Child Spawning */}
-        <section>
-          <h4>Child Spawning</h4>
+        <ControlSection title="Child Spawning">
           
           <SliderInput
             label="Spawn Probability"
@@ -381,11 +335,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(2)}
           />
-        </section>
+        </ControlSection>
 
         {/* Perlin Noise */}
-        <section>
-          <h4>Perlin Noise</h4>
+        <ControlSection title="Perlin Noise">
           
           <SliderInput
             label="Scale"
@@ -430,11 +383,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(1)}
           />
-        </section>
+        </ControlSection>
 
         {/* Mouse Interaction */}
-        <section>
-          <h4>Mouse Interaction</h4>
+        <ControlSection title="Mouse Interaction">
           
           <div className="control-group">
             <label>Force Type</label>
@@ -479,11 +431,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             path="mouseInteraction.clickSpawnCount"
             onChange={handleSliderChange}
           />
-        </section>
+        </ControlSection>
 
         {/* Visual Effects */}
-        <section>
-          <h4>Visual Effects</h4>
+        <ControlSection title="Visual Effects">
           
           <div className="control-group">
             <label>
@@ -506,26 +457,10 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(1)}
           />
-        </section>
+        </ControlSection>
 
         {/* Config Management */}
-        <section>
-          <h4>Configuration</h4>
-          
-          <div className="config-buttons">
-            <button onClick={handleExport}>Export Config</button>
-            <label className="file-input-label">
-              Import Config
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <button onClick={handleReset} className="reset-button">Reset to Defaults</button>
-          </div>
-        </section>
+        <ConfigManagement configManager={configManager} />
       </div>
     </div>
       )}
