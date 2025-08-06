@@ -3,7 +3,7 @@ export const DEFAULT_SETTINGS = {
   
   particles: {
     maxCount: 2000,
-    spawnRate: 55, // particles per second
+    spawnRate: 39, // particles per second
     lifetime: {
       min: 3.3,
       max: 7.5
@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS = {
       speed: 2.0,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 0.27,
+    upwardForce: 0.14,
     spawnArea: {
       x: { min: 0.0, max: 1.0 }, // percentage of screen width
       y: { min: 1.0, max: 1.2 }  // percentage of screen height (below bottom edge)
