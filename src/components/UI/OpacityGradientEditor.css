@@ -114,11 +114,11 @@
   gap: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  background: var(--control-bg);
+  background: var(--control-bg); /* Use theme variable for background */
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Slightly stronger default shadow */
   min-width: 80px;
   pointer-events: none; /* Prevent interference with dragging */
   z-index: 100; /* Much higher to ensure it's above everything */
@@ -211,22 +211,28 @@
 }
 
 /* Dark theme adjustments */
-[data-theme="dark"] .opacity-stop {
+.control-panel.dark .opacity-stop {
   border-color: #555;
 }
 
-[data-theme="dark"] .stop-opacity-input {
+.control-panel.dark .stop-controls {
+  background: #2a2a2a !important;
+  border-color: #555;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.control-panel.dark .stop-opacity-input {
   background: #1a1a1a;
   color: #ffffff;
   border-color: #555;
 }
 
-[data-theme="dark"] .stop-opacity-input:focus {
+.control-panel.dark .stop-opacity-input:focus {
   border-color: #4a9eff;
   background: #0a0a0a;
 }
 
-[data-theme="dark"] .opacity-checkerboard {
+.control-panel.dark .opacity-checkerboard {
   background-image: 
     linear-gradient(45deg, #333 25%, transparent 25%), 
     linear-gradient(-45deg, #333 25%, transparent 25%), 
@@ -234,27 +240,69 @@
     linear-gradient(-45deg, transparent 75%, #333 75%);
 }
 
-/* Light theme adjustments */
-[data-theme="light"] .opacity-stop {
-  border-color: #ddd;
+/* Light theme adjustments - More specific selectors to override CSS variables */
+.control-panel.light .opacity-stop {
+  border-color: #ddd !important;
 }
 
-[data-theme="light"] .stop-opacity-input {
-  background: #ffffff;
+.control-panel.light .opacity-gradient-timeline {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+}
+
+.control-panel.light .timeline-marker {
+  background: #ccc !important;
+}
+
+.control-panel.light .stop-controls {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.control-panel.light .stop-opacity-input {
+  background: #ffffff !important;
   color: #333333 !important; /* Dark text for light mode */
-  border-color: #ccc;
+  border-color: #ccc !important;
 }
 
-[data-theme="light"] .stop-opacity-input:focus {
-  border-color: #4a9eff;
-  background: #f9f9f9;
+.control-panel.light .stop-opacity-input:focus {
+  border-color: #4a9eff !important;
+  background: #f9f9f9 !important;
   color: #333333 !important; /* Ensure dark text on focus too */
 }
 
-[data-theme="light"] .opacity-checkerboard {
+.control-panel.light .stop-position {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+  color: #666666 !important;
+}
+
+.control-panel.light .opacity-checkerboard {
   background-image: 
     linear-gradient(45deg, #eee 25%, transparent 25%), 
     linear-gradient(-45deg, #eee 25%, transparent 25%), 
     linear-gradient(45deg, transparent 75%, #eee 75%), 
     linear-gradient(-45deg, transparent 75%, #eee 75%);
+}
+
+/* Ensure dark text in light mode for all opacity gradient editor elements */
+.control-panel.light .opacity-gradient-editor-label {
+  color: #333333 !important;
+}
+
+.control-panel.light .timeline-label {
+  color: #666666 !important;
+}
+
+.control-panel.light .opacity-value {
+  color: #666666 !important;
+}
+
+.control-panel.light .stop-position {
+  color: #666666 !important;
+}
+
+.control-panel.light .opacity-gradient-instructions {
+  color: #666666 !important;
 }

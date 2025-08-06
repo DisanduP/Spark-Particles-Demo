@@ -427,3 +427,47 @@
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Define theme-specific CSS variables within control panel scope */
+.control-panel.light {
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --control-bg: #ffffff;
+  --control-bg-hover: #f9f9f9;
+  --border-color: #cccccc;
+}
+
+.control-panel.dark {
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --control-bg: #1a1a1a;
+  --control-bg-hover: #2a2a2a;
+  --border-color: #555555;
+}
+
+/* Light theme text color overrides to ensure dark text */
+.control-panel.light {
+  color: #333333 !important;
+}
+
+.control-panel.light .control-sections h4 {
+  color: #333333 !important;
+}
+
+.control-panel.light .control-group label {
+  color: #555555 !important;
+}
+
+.control-panel.light .control-actions .hide-button {
+  color: #666666 !important;
+}
+
+.control-panel.light .slider-input-header label {
+  color: #555555 !important;
+}
+
+.control-panel.light .color-value {
+  color: #333333 !important;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}

@@ -7,6 +7,13 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
+  /* Theme variables for dark mode (default) */
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --control-bg: #1a1a1a;
+  --control-bg-hover: #2a2a2a;
+  --border-color: #444444;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -58,6 +65,13 @@ button:focus-visible {
   :root {
     color: #213547;
     background-color: #ffffff;
+    
+    /* Theme variables for light mode */
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --control-bg: #ffffff;
+    --control-bg-hover: #f9f9f9;
+    --border-color: #cccccc;
   }
   a:hover {
     color: #747bff;
