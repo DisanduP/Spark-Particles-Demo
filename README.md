@@ -7,10 +7,6 @@ A playground for building a WebGL-based particle system that simulates fire embe
 ### Installation
 
 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/spark-particles.git
-cd spark-particles
-```
 
 2. Install dependencies
 ```bash
