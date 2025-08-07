@@ -189,6 +189,9 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       settings.mouseInteraction,
       mouseVelocityRef.current
     );
+
+    // Update mouse spawn position if actively spawning
+    particleManagerRef.current.updateMouseSpawnPosition(mouseX, mouseY);
   };
 
   const handleMouseDown = (event) => {
@@ -199,12 +202,22 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    const settings = configManagerRef.current.getSettings();
-    particleManagerRef.current.spawnParticleAt(
-      mouseX, 
-      mouseY, 
-      settings.mouseInteraction.clickSpawnCount
-    );
+    // Start continuous spawning at mouse position
+    particleManagerRef.current.startMouseSpawning(mouseX, mouseY);
+  };
+
+  const handleMouseUp = (event) => {
+    if (!particleManagerRef.current) return;
+    
+    // Stop continuous spawning
+    particleManagerRef.current.stopMouseSpawning();
+  };
+
+  const handleMouseLeave = (event) => {
+    if (!particleManagerRef.current) return;
+    
+    // Stop spawning when mouse leaves canvas
+    particleManagerRef.current.stopMouseSpawning();
   };
 
   // Resize handler
@@ -213,7 +226,15 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       resizeCanvas();
     };
 
+    // Global mouse up handler to ensure spawning stops even if mouse is released outside canvas
+    const handleGlobalMouseUp = () => {
+      if (particleManagerRef.current) {
+        particleManagerRef.current.stopMouseSpawning();
+      }
+    };
+
     window.addEventListener('resize', handleResize);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
     
     // Also use ResizeObserver to watch the canvas container
     const canvas = canvasRef.current;
@@ -226,11 +247,15 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       
       return () => {
         window.removeEventListener('resize', handleResize);
+        window.removeEventListener('mouseup', handleGlobalMouseUp);
         resizeObserver.disconnect();
       };
     }
     
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
   }, []);
 
   // Expose config manager to parent - only run once when initialized
@@ -281,6 +306,8 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         style={{
           width: '100%',
           height: '100%',

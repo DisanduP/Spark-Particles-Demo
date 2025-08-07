@@ -10,6 +10,11 @@ export class ParticleManager {
     this.lastSpawnTime = 0;
     this.timeAccumulator = 0;
     
+    // Mouse spawning state
+    this.mouseSpawnActive = false;
+    this.mouseSpawnPosition = { x: 0, y: 0 };
+    this.mouseSpawnAccumulator = 0;
+    
     // Canvas dimensions for boundary checking
     this.canvasWidth = 800;
     this.canvasHeight = 600;
@@ -17,9 +22,13 @@ export class ParticleManager {
 
   update(deltaTime) {
     this.timeAccumulator += deltaTime;
+    this.mouseSpawnAccumulator += deltaTime;
     
     // Spawn new particles based on spawn rate
     this.spawnParticles();
+    
+    // Handle mouse spawning if active
+    this.spawnMouseParticles();
     
     // Update existing particles
     this.updateParticles(deltaTime);
@@ -39,6 +48,20 @@ export class ParticleManager {
       
       this.spawnRandomParticle();
       this.timeAccumulator -= spawnInterval;
+    }
+  }
+
+  spawnMouseParticles() {
+    if (!this.mouseSpawnActive) return;
+    
+    const spawnRate = this.settings.mouseInteraction.clickSpawnCount; // particles per second
+    const spawnInterval = 1.0 / spawnRate;
+    
+    while (this.mouseSpawnAccumulator >= spawnInterval && 
+           this.particles.length < this.settings.particles.maxCount) {
+      
+      this.spawnParticleAt(this.mouseSpawnPosition.x, this.mouseSpawnPosition.y, 1);
+      this.mouseSpawnAccumulator -= spawnInterval;
     }
   }
 
@@ -243,6 +266,22 @@ export class ParticleManager {
   updateSettings(newSettings) {
     this.settings = newSettings;
     this.perlinNoise.updateSettings(newSettings);
+  }
+
+  startMouseSpawning(mouseX, mouseY) {
+    this.mouseSpawnActive = true;
+    this.mouseSpawnPosition = { x: mouseX, y: mouseY };
+    this.mouseSpawnAccumulator = 0; // Reset accumulator to start spawning immediately
+  }
+
+  stopMouseSpawning() {
+    this.mouseSpawnActive = false;
+  }
+
+  updateMouseSpawnPosition(mouseX, mouseY) {
+    if (this.mouseSpawnActive) {
+      this.mouseSpawnPosition = { x: mouseX, y: mouseY };
+    }
   }
 
   setCanvasSize(width, height) {

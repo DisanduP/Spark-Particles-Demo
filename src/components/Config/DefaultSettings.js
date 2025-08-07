@@ -5,26 +5,26 @@ export const DEFAULT_SETTINGS = {
     maxCount: 2000,
     spawnRate: 39, // particles per second
     lifetime: {
-      min: 3.3,
-      max: 7.5
+      min: 5,
+      max: 15
     },
     size: {
-      base: 12.0,        // Base/maximum size of particles
+      base: 12,        // Base/maximum size of particles
       randomVariation: 0.5  // How much size can vary (0.0 = no variation, 1.0 = can be 0 to base size)
     },
     rotation: {
-      speed: 2.0,        // Base rotation speed (radians per second)
+      speed: 2,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 0.14,
+    upwardForce: 0.15,
     spawnArea: {
-      x: { min: 0.0, max: 1.0 }, // percentage of screen width
-      y: { min: 1.0, max: 1.2 }  // percentage of screen height (below bottom edge)
+      x: { min: 0, max: 1 }, // percentage of screen width
+      y: { min: 1, max: 1.2 }  // percentage of screen height (below bottom edge)
     }
   },
 
   childSpawning: {
-    probability: 0.001, // per frame probability
+    probability: 0, // per frame probability
     forceMultiplier: {
       target: 1.4,
       randomRange: 0.3
@@ -33,24 +33,24 @@ export const DEFAULT_SETTINGS = {
   },
 
   perlinNoise: {
-    scale: 0.02,
+    scale: 2,
     strength: {
-      horizontal: 1.0,
-      vertical: 0.1
+      horizontal: 1,
+      vertical: 1
     },
-    speed: 0.5,
+    speed: 0.3,
     octaves: 3
   },
 
   mouseInteraction: {
-    forceType: 'radial', // 'radial', 'directional', 'suction', 'sweep'
-    strength: 86.0,
-    radius: 113.0,
-    falloffCurve: 2.0,
-    clickSpawnCount: 16,
+    forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep'
+    strength: 0,
+    radius: 220,
+    falloffCurve: 2,
+    clickSpawnCount: 20,
     sweep: {
-      speedMultiplier: 2.0,  // How much mouse speed affects force strength
-      directionalSpread: 0.5 // How focused the directional force is (0 = tight beam, 1 = wide spread)
+      speedMultiplier: 4.8,  // How much mouse speed affects force strength
+      directionalSpread: 0.8 // How focused the directional force is (0 = tight beam, 1 = wide spread)
     }
   },
 
@@ -58,19 +58,19 @@ export const DEFAULT_SETTINGS = {
     useTexture: true, // Use SVG texture instead of procedural shape
     bloom: {
       intensity: 1.5,
-      radius: 8.0
+      radius: 8
     },
     trails: {
       length: 20,
       fadeRate: 0.95
     },
     glow: {
-      radius: 12.0,
-      intensity: 0.0,
+      radius: 12,
+      intensity: 0,
       speedBased: {
         enabled: true,
-        maxIntensity: 2.0,
-        minSpeedThreshold: 50.0 // Minimum speed to start applying glow
+        maxIntensity: 2,
+        minSpeedThreshold: 50 // Minimum speed to start applying glow
       }
     },
     gradients: {

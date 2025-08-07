@@ -422,13 +422,14 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
           />
 
           <SliderInput
-            label="Click Spawn Count"
+            label="Mouse Spawn Rate"
             value={settings.mouseInteraction.clickSpawnCount}
             min={1}
-            max={20}
+            max={50}
             step={1}
             path="mouseInteraction.clickSpawnCount"
             onChange={handleSliderChange}
+            formatDisplay={(val) => `${val}/sec`}
           />
 
           {/* Sweep-specific controls */}
