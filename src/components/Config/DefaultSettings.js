@@ -44,10 +44,10 @@ export const DEFAULT_SETTINGS = {
 
   mouseInteraction: {
     forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep'
-    strength: 23,
+    strength: 9,
     radius: 220,
     falloffCurve: 2,
-    clickSpawnCount: 20,
+    clickSpawnCount: 40,
     sweep: {
       speedMultiplier: 8,  // How much mouse speed affects force strength
       directionalSpread: 0.8 // How focused the directional force is (0 = tight beam, 1 = wide spread)
