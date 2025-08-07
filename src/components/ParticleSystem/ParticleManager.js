@@ -135,7 +135,7 @@ export class ParticleManager {
   }
 
   // Handle different force types
-  applyForce(mouseX, mouseY, forceType, forceSettings) {
+  applyForce(mouseX, mouseY, forceType, forceSettings, mouseVelocity = null) {
     switch (forceType) {
       case 'radial':
         this.applyMouseForce(mouseX, mouseY, forceSettings);
@@ -145,6 +145,9 @@ export class ParticleManager {
         break;
       case 'directional':
         this.applyDirectionalForce(mouseX, mouseY, forceSettings);
+        break;
+      case 'sweep':
+        this.applySweepForce(mouseX, mouseY, forceSettings, mouseVelocity);
         break;
     }
   }
@@ -187,6 +190,52 @@ export class ParticleManager {
           forceDirection.x * strength * 0.01,
           forceDirection.y * strength * 0.01
         );
+      }
+    }
+  }
+
+  applySweepForce(mouseX, mouseY, forceSettings, mouseVelocity) {
+    if (!mouseVelocity || mouseVelocity.speed < 1) return; // Don't apply force if mouse isn't moving
+    
+    const { strength, radius, falloffCurve, sweep } = forceSettings;
+    const { speedMultiplier, directionalSpread } = sweep;
+    
+    // Normalize mouse velocity direction
+    const velocityMagnitude = mouseVelocity.speed;
+    const velocityDirX = velocityMagnitude > 0 ? mouseVelocity.x / velocityMagnitude : 0;
+    const velocityDirY = velocityMagnitude > 0 ? mouseVelocity.y / velocityMagnitude : 0;
+    
+    // Calculate speed-based force multiplier
+    const speedBasedForce = velocityMagnitude * speedMultiplier;
+    
+    for (const particle of this.particles) {
+      const dx = particle.x - mouseX;
+      const dy = particle.y - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < radius && distance > 0) {
+        // Calculate base radial force with falloff
+        const normalizedDistance = distance / radius;
+        const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+        
+        // Base radial force (push away from mouse)
+        const radialDirX = dx / distance;
+        const radialDirY = dy / distance;
+        const radialForce = strength * falloff * 0.01;
+        
+        // Calculate directional alignment (how much particle direction aligns with mouse movement)
+        const directionAlignment = Math.max(0, radialDirX * velocityDirX + radialDirY * velocityDirY);
+        
+        // Apply directional bias based on spread setting
+        // directionalSpread: 0 = tight beam, 1 = wide spread
+        const directionalInfluence = Math.pow(directionAlignment, 1 / (directionalSpread + 0.1));
+        const directionalForce = speedBasedForce * directionalInfluence * falloff * 0.01;
+        
+        // Combine radial and directional forces
+        const totalForceX = radialForce * radialDirX + directionalForce * velocityDirX;
+        const totalForceY = radialForce * radialDirY + directionalForce * velocityDirY;
+        
+        particle.applyForce(totalForceX, totalForceY);
       }
     }
   }

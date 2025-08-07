@@ -395,6 +395,7 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
               <option value="radial">Radial Push</option>
               <option value="suction">Suction</option>
               <option value="directional">Directional</option>
+              <option value="sweep">Sweep</option>
             </select>
           </div>
 
@@ -429,6 +430,33 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             path="mouseInteraction.clickSpawnCount"
             onChange={handleSliderChange}
           />
+
+          {/* Sweep-specific controls */}
+          {settings.mouseInteraction.forceType === 'sweep' && (
+            <>
+              <SliderInput
+                label="Speed Multiplier"
+                value={settings.mouseInteraction.sweep.speedMultiplier}
+                min={0.1}
+                max={5.0}
+                step={0.1}
+                path="mouseInteraction.sweep.speedMultiplier"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+
+              <SliderInput
+                label="Directional Spread"
+                value={settings.mouseInteraction.sweep.directionalSpread}
+                min={0.0}
+                max={1.0}
+                step={0.1}
+                path="mouseInteraction.sweep.directionalSpread"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+            </>
+          )}
         </ControlSection>
 
         {/* Visual Effects */}

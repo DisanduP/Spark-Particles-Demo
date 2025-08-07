@@ -15,6 +15,10 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   const frameCountRef = useRef(0);
   const lastFpsUpdateRef = useRef(0);
   
+  // Mouse velocity tracking
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const mouseVelocityRef = useRef({ x: 0, y: 0, speed: 0 });
+  
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState(null);
   const [statusInfo, setStatusInfo] = useState({
@@ -167,16 +171,27 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
+    // Calculate mouse velocity
+    const lastPos = lastMousePosRef.current;
+    const velocityX = mouseX - lastPos.x;
+    const velocityY = mouseY - lastPos.y;
+    const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+    
+    // Update velocity tracking
+    mouseVelocityRef.current = { x: velocityX, y: velocityY, speed };
+    lastMousePosRef.current = { x: mouseX, y: mouseY };
+
     const settings = configManagerRef.current.getSettings();
     particleManagerRef.current.applyForce(
       mouseX, 
       mouseY, 
       settings.mouseInteraction.forceType,
-      settings.mouseInteraction
+      settings.mouseInteraction,
+      mouseVelocityRef.current
     );
   };
 
-  const handleMouseClick = (event) => {
+  const handleMouseDown = (event) => {
     if (!particleManagerRef.current || !configManagerRef.current) return;
 
     const canvas = canvasRef.current;
@@ -265,7 +280,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}
-        onClick={handleMouseClick}
+        onMouseDown={handleMouseDown}
         style={{
           width: '100%',
           height: '100%',
