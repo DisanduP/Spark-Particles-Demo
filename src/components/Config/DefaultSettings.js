@@ -89,7 +89,7 @@ export const DEFAULT_SETTINGS = {
     },
     opacityGradient: [
       { position: 0, opacity: 0 },
-      { position: 0.09, opacity: 1 },
+      { position: 0.01, opacity: 1 },
       { position: 0.4, opacity: 1 },
       { position: 1, opacity: 0 }
     ]
