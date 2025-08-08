@@ -627,6 +627,158 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
               />
             </>
           )}
+          
+          <div style={{ marginTop: '15px' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              <input
+                type="checkbox"
+                checked={settings.visual.bloom.speedBased.enabled}
+                onChange={(e) => onSettingChange('visual.bloom.speedBased.enabled', e.target.checked)}
+              />
+              Speed-Based Bloom
+            </label>
+          </div>
+          
+          {settings.visual.bloom.speedBased.enabled && (
+            <>
+              <SliderInput
+                label="Bloom Falloff Distance"
+                value={settings.visual.bloom.speedBased.falloffDistance}
+                min={5}
+                max={50}
+                step={1}
+                path="visual.bloom.speedBased.falloffDistance"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)}x`}
+              />
+              
+              <SliderInput
+                label="Bloom Color Shift"
+                value={settings.visual.bloom.speedBased.colorShift}
+                min={0}
+                max={1}
+                step={0.05}
+                path="visual.bloom.speedBased.colorShift"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(2)}
+              />
+              
+              <SliderInput
+                label="Max Bloom Intensity"
+                value={settings.visual.bloom.speedBased.maxIntensity}
+                min={0}
+                max={3}
+                step={0.1}
+                path="visual.bloom.speedBased.maxIntensity"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+              
+              <SliderInput
+                label="Bloom Speed Threshold"
+                value={settings.visual.bloom.speedBased.minSpeedThreshold}
+                min={0}
+                max={200}
+                step={5}
+                path="visual.bloom.speedBased.minSpeedThreshold"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)} px/s`}
+              />
+            </>
+          )}
+          
+          <div style={{ marginTop: '15px' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              <input
+                type="checkbox"
+                checked={settings.visual.trails.speedBased.enabled}
+                onChange={(e) => onSettingChange('visual.trails.speedBased.enabled', e.target.checked)}
+              />
+              Speed-Based Trails
+            </label>
+          </div>
+          
+          {settings.visual.trails.speedBased.enabled && (
+            <>
+              <SliderInput
+                label="Trail Length Multiplier"
+                value={settings.visual.trails.speedBased.lengthMultiplier}
+                min={0.1}
+                max={2}
+                step={0.1}
+                path="visual.trails.speedBased.lengthMultiplier"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(1)}x`}
+              />
+              
+              <SliderInput
+                label="Max Trail Length"
+                value={settings.visual.trails.speedBased.maxLength}
+                min={10}
+                max={100}
+                step={5}
+                path="visual.trails.speedBased.maxLength"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)} segments`}
+              />
+              
+              <SliderInput
+                label="Trail Color Shift"
+                value={settings.visual.trails.speedBased.colorShift}
+                min={0}
+                max={1}
+                step={0.05}
+                path="visual.trails.speedBased.colorShift"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(2)}
+              />
+              
+              <SliderInput
+                label="Trail Spacing"
+                value={settings.visual.trails.speedBased.spacing}
+                min={1}
+                max={10}
+                step={1}
+                path="visual.trails.speedBased.spacing"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)} particles`}
+              />
+              
+              <SliderInput
+                label="Trail Opacity Falloff"
+                value={settings.visual.trails.speedBased.opacityFalloff}
+                min={0.5}
+                max={4.0}
+                step={0.1}
+                path="visual.trails.speedBased.opacityFalloff"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(1)}x`}
+              />
+              
+              <SliderInput
+                label="Trail Speed Threshold"
+                value={settings.visual.trails.speedBased.minSpeedThreshold}
+                min={0}
+                max={200}
+                step={5}
+                path="visual.trails.speedBased.minSpeedThreshold"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)} px/s`}
+              />
+            </>
+          )}
         </ControlSection>
 
         {/* Config Management */}

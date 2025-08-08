@@ -5,12 +5,16 @@ varying float v_alpha;
 varying vec2 v_uv;
 varying vec3 v_color;
 varying float v_glowIntensity;
+varying float v_bloomIntensity;
+varying float v_trailLength;
 
 uniform vec3 u_color;
 uniform float u_glowIntensity;
 uniform bool u_isDarkMode;
 uniform sampler2D u_texture;
 uniform bool u_useTexture;
+uniform vec3 u_bloomSettings; // [falloffDistance, colorShift, enabled]
+uniform vec2 u_trailSettings; // [colorShift, enabled]
 
 float sparkleShape(vec2 uv) {
   vec2 center = uv - 0.5;
@@ -20,6 +24,24 @@ float sparkleShape(vec2 uv) {
   float star = smoothstep(0.4 * rays, 0.2 * rays, dist);
   float glow = exp(-dist * 8.0) * 0.5;
   return max(star, glow);
+}
+
+// Cool down color by reducing red/warm tones
+vec3 coolColor(vec3 color, float amount) {
+  // Reduce red, slightly increase blue for cooler tone
+  vec3 cooled = color;
+  cooled.r *= (1.0 - amount * 0.8);
+  cooled.g *= (1.0 - amount * 0.3);
+  cooled.b *= (1.0 + amount * 0.2);
+  return cooled;
+}
+
+// Create bloom effect with falloff
+float bloomEffect(vec2 uv, float falloffDistance, float intensity) {
+  vec2 center = uv - 0.5;
+  float dist = length(center);
+  float bloom = exp(-dist * falloffDistance) * intensity;
+  return bloom;
 }
 
 void main() {
@@ -51,6 +73,25 @@ void main() {
   // Use per-particle glow intensity combined with global glow intensity
   float totalGlowIntensity = u_glowIntensity + v_glowIntensity;
   color += vec3(totalGlowIntensity * 0.3) * shape;
+  
+  // Apply bloom effect if enabled
+  if (u_bloomSettings.z > 0.5) { // enabled
+    float bloomIntensity = v_bloomIntensity;
+    if (bloomIntensity > 0.0) {
+      float bloom = bloomEffect(v_uv, u_bloomSettings.x, bloomIntensity);
+      vec3 bloomColor = coolColor(v_color, u_bloomSettings.y);
+      color += bloomColor * bloom * 0.5;
+      finalAlpha += bloom * 0.3; // Add bloom to alpha for outer glow
+    }
+  }
+  
+  // Apply trail effect if enabled (this would be better handled in a separate render pass)
+  if (u_trailSettings.y > 0.5 && v_trailLength > 0.0) { // enabled and has trail
+    // Trail effect is mainly handled by rendering multiple particles at trail positions
+    // Here we just apply the color cooling for trail segments
+    vec3 trailColor = coolColor(v_color, u_trailSettings.x);
+    color = mix(color, trailColor, v_trailLength * 0.1);
+  }
   
   gl_FragColor = vec4(color, finalAlpha);
 }

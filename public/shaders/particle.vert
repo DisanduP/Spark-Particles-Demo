@@ -7,6 +7,8 @@ attribute vec3 a_color;
 attribute float a_rotation;
 attribute float a_opacity;
 attribute float a_glowIntensity;
+attribute float a_bloomIntensity;
+attribute float a_trailLength;
 
 uniform vec2 u_resolution;
 uniform mat3 u_transform;
@@ -20,12 +22,16 @@ uniform vec3 u_particleColor;
 uniform float u_particleRotation;
 uniform float u_particleOpacity;
 uniform float u_particleGlowIntensity;
+uniform float u_particleBloomIntensity;
+uniform float u_particleTrailLength;
 
 varying float v_life;
 varying float v_alpha;
 varying vec2 v_uv;
 varying vec3 v_color;
 varying float v_glowIntensity;
+varying float v_bloomIntensity;
+varying float v_trailLength;
 
 void main() {
   // Use instanced attributes if available, otherwise use uniforms
@@ -38,10 +44,14 @@ void main() {
   float opacity = a_opacity != 0.0 ? a_opacity : u_particleOpacity;
   // For glow intensity, always use attribute if instanced rendering, otherwise use uniform
   float glowIntensity = a_glowIntensity >= 0.0 ? a_glowIntensity : u_particleGlowIntensity;
+  float bloomIntensity = a_bloomIntensity >= 0.0 ? a_bloomIntensity : u_particleBloomIntensity;
+  float trailLength = a_trailLength >= 0.0 ? a_trailLength : u_particleTrailLength;
   
-  // Pass color and glow intensity to fragment shader
+  // Pass color and effect intensities to fragment shader
   v_color = color;
   v_glowIntensity = glowIntensity;
+  v_bloomIntensity = bloomIntensity;
+  v_trailLength = trailLength;
   
   // Use the opacity from gradient instead of calculating based on lifecycle
   v_life = life / maxLife;

@@ -78,19 +78,35 @@ export const DEFAULT_SETTINGS = {
     useTexture: true, // Use SVG texture instead of procedural shape
     bloom: {
       intensity: 1.5,
-      radius: 8
+      radius: 8,
+      speedBased: {
+        enabled: false,
+        falloffDistance: 7, // Falloff distance multiplier (relative to particle size)
+        colorShift: 1, // How much to reduce red tones (0 = no shift, 1 = full shift to cooler)
+        minSpeedThreshold: 135, // Minimum speed to start applying bloom
+        maxIntensity: 20 // Maximum bloom intensity at high speeds
+      }
     },
     trails: {
       length: 20,
-      fadeRate: 0.95
+      fadeRate: 0.95,
+      speedBased: {
+        enabled: true,
+        lengthMultiplier: 0.8, // Trail length multiplier based on speed
+        minSpeedThreshold: 70, // Minimum speed to start showing trails
+        maxLength: 15, // Maximum trail length at high speeds
+        colorShift: 10, // How much to cool the trail color (0 = same as particle, 1 = fully cooled)
+        spacing: 4, // Number of particle duplications between trail positions for smoother trails
+        opacityFalloff: 0.1 // How quickly opacity fades along trail (1.0 = linear, >1.0 = faster fade, <1.0 = slower fade)
+      }
     },
     glow: {
       radius: 12,
       intensity: 0,
       speedBased: {
         enabled: true,
-        maxIntensity: 2,
-        minSpeedThreshold: 50 // Minimum speed to start applying glow
+        maxIntensity: 10,
+        minSpeedThreshold: 85 // Minimum speed to start applying glow
       }
     },
     gradients: {

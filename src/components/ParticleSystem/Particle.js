@@ -44,7 +44,12 @@ export class Particle {
     // Speed tracking for glow effects
     this.speed = 0;
     this.speedBasedGlow = 0;
+    this.speedBasedBloom = 0;
     this.noiseOffset = Math.random() * 1000; // Unique noise offset for this particle
+    
+    // Trail tracking
+    this.trailPositions = []; // Array of {x, y, alpha} positions for trail rendering
+    this.speedBasedTrailLength = 0;
   }
 
   update(deltaTime, settings, noiseField) {
@@ -92,6 +97,38 @@ export class Particle {
       this.speedBasedGlow = normalizedSpeed * settings.visual.glow.speedBased.maxIntensity;
     } else {
       this.speedBasedGlow = 0;
+    }
+    
+    // Calculate speed-based bloom intensity
+    if (settings.visual.bloom.speedBased.enabled && this.speed > settings.visual.bloom.speedBased.minSpeedThreshold) {
+      const normalizedSpeed = Math.min((this.speed - settings.visual.bloom.speedBased.minSpeedThreshold) / 200, 1.0);
+      this.speedBasedBloom = normalizedSpeed * settings.visual.bloom.speedBased.maxIntensity;
+    } else {
+      this.speedBasedBloom = 0;
+    }
+    
+    // Calculate speed-based trail length and update trail positions
+    if (settings.visual.trails.speedBased.enabled && this.speed > settings.visual.trails.speedBased.minSpeedThreshold) {
+      const normalizedSpeed = Math.min((this.speed - settings.visual.trails.speedBased.minSpeedThreshold) / 200, 1.0);
+      this.speedBasedTrailLength = Math.floor(normalizedSpeed * settings.visual.trails.speedBased.maxLength * settings.visual.trails.speedBased.lengthMultiplier);
+      
+      // Add current position to trail
+      this.trailPositions.unshift({ x: this.x, y: this.y, alpha: 1.0 });
+      
+      // Trim trail to desired length
+      if (this.trailPositions.length > this.speedBasedTrailLength) {
+        this.trailPositions = this.trailPositions.slice(0, this.speedBasedTrailLength);
+      }
+      
+      // Update trail alphas (fade over distance)
+      for (let i = 0; i < this.trailPositions.length; i++) {
+        const normalizedPosition = i / this.trailPositions.length; // 0 to 1
+        const falloffExponent = settings.visual.trails.speedBased.opacityFalloff || 1.0;
+        this.trailPositions[i].alpha = 1.0 - Math.pow(normalizedPosition, falloffExponent);
+      }
+    } else {
+      this.speedBasedTrailLength = 0;
+      this.trailPositions = [];
     }
     
     // Calculate lifecycle ratio for gradients

@@ -178,7 +178,9 @@ export class WebGLRenderer {
       color: gl.getAttribLocation(this.program, 'a_color'),
       rotation: gl.getAttribLocation(this.program, 'a_rotation'),
       opacity: gl.getAttribLocation(this.program, 'a_opacity'),
-      glowIntensity: gl.getAttribLocation(this.program, 'a_glowIntensity')
+      glowIntensity: gl.getAttribLocation(this.program, 'a_glowIntensity'),
+      bloomIntensity: gl.getAttribLocation(this.program, 'a_bloomIntensity'),
+      trailLength: gl.getAttribLocation(this.program, 'a_trailLength')
     };
     
     // Uniforms
@@ -190,6 +192,8 @@ export class WebGLRenderer {
       isDarkMode: gl.getUniformLocation(this.program, 'u_isDarkMode'),
       texture: gl.getUniformLocation(this.program, 'u_texture'),
       useTexture: gl.getUniformLocation(this.program, 'u_useTexture'),
+      bloomSettings: gl.getUniformLocation(this.program, 'u_bloomSettings'), // [falloffDistance, colorShift, enabled]
+      trailSettings: gl.getUniformLocation(this.program, 'u_trailSettings'), // [colorShift, enabled]
             // For non-instanced fallback
       particlePos: gl.getUniformLocation(this.program, 'u_particlePos'),
       particleSize: gl.getUniformLocation(this.program, 'u_particleSize'),
@@ -198,7 +202,9 @@ export class WebGLRenderer {
       particleColor: gl.getUniformLocation(this.program, 'u_particleColor'),
       particleRotation: gl.getUniformLocation(this.program, 'u_particleRotation'),
       particleOpacity: gl.getUniformLocation(this.program, 'u_particleOpacity'),
-      particleGlowIntensity: gl.getUniformLocation(this.program, 'u_particleGlowIntensity')
+      particleGlowIntensity: gl.getUniformLocation(this.program, 'u_particleGlowIntensity'),
+      particleBloomIntensity: gl.getUniformLocation(this.program, 'u_particleBloomIntensity'),
+      particleTrailLength: gl.getUniformLocation(this.program, 'u_particleTrailLength')
     };
   }
 
@@ -229,6 +235,8 @@ export class WebGLRenderer {
     this.buffers.rotation = gl.createBuffer();
     this.buffers.opacity = gl.createBuffer();
     this.buffers.glowIntensity = gl.createBuffer();
+    this.buffers.bloomIntensity = gl.createBuffer();
+    this.buffers.trailLength = gl.createBuffer();
   }
 
   updateParticleData(particles) {
@@ -246,6 +254,8 @@ export class WebGLRenderer {
     const rotations = new Float32Array(particleCount);
     const opacities = new Float32Array(particleCount);
     const glowIntensities = new Float32Array(particleCount);
+    const bloomIntensities = new Float32Array(particleCount);
+    const trailLengths = new Float32Array(particleCount);
     
     // Fill arrays with particle data
     for (let i = 0; i < particleCount; i++) {
@@ -258,6 +268,8 @@ export class WebGLRenderer {
       rotations[i] = particle.rotation;
       opacities[i] = particle.opacity;
       glowIntensities[i] = particle.speedBasedGlow;
+      bloomIntensities[i] = particle.speedBasedBloom;
+      trailLengths[i] = particle.speedBasedTrailLength;
       
       // Convert hex color to RGB
       const rgb = hexToRgb(particle.color);
@@ -290,6 +302,12 @@ export class WebGLRenderer {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.glowIntensity);
     gl.bufferData(gl.ARRAY_BUFFER, glowIntensities, gl.DYNAMIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.bloomIntensity);
+    gl.bufferData(gl.ARRAY_BUFFER, bloomIntensities, gl.DYNAMIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.trailLength);
+    gl.bufferData(gl.ARRAY_BUFFER, trailLengths, gl.DYNAMIC_DRAW);
   }
 
   render(particles, settings) {
@@ -313,9 +331,34 @@ export class WebGLRenderer {
     gl.uniform1f(this.uniforms.glowIntensity, settings.visual.glow.intensity);
     gl.uniform1i(this.uniforms.isDarkMode, settings.theme.mode === 'dark' ? 1 : 0);
     
+    // Set bloom settings [falloffDistance, colorShift, enabled]
+    if (this.uniforms.bloomSettings) {
+      const bloomEnabled = settings.visual.bloom.speedBased.enabled ? 1.0 : 0.0;
+      gl.uniform3f(this.uniforms.bloomSettings, 
+        settings.visual.bloom.speedBased.falloffDistance,
+        settings.visual.bloom.speedBased.colorShift,
+        bloomEnabled
+      );
+    }
+    
+    // Set trail settings [colorShift, enabled]
+    if (this.uniforms.trailSettings) {
+      const trailEnabled = settings.visual.trails.speedBased.enabled ? 1.0 : 0.0;
+      gl.uniform2f(this.uniforms.trailSettings,
+        settings.visual.trails.speedBased.colorShift,
+        trailEnabled
+      );
+    }
+    
     // Set fallback uniforms for non-instanced rendering
     if (this.uniforms.particleGlowIntensity) {
       gl.uniform1f(this.uniforms.particleGlowIntensity, 0.0);
+    }
+    if (this.uniforms.particleBloomIntensity) {
+      gl.uniform1f(this.uniforms.particleBloomIntensity, 0.0);
+    }
+    if (this.uniforms.particleTrailLength) {
+      gl.uniform1f(this.uniforms.particleTrailLength, 0.0);
     }
     
     // Set texture uniforms
@@ -328,19 +371,56 @@ export class WebGLRenderer {
       gl.uniform1i(this.uniforms.texture, 0);
     }
     
-    // Update particle data
-    this.updateParticleData(particles);
+    // Create expanded particle list including trails
+    let expandedParticles = [];
+    
+    for (let particle of particles) {
+      // Add the main particle
+      expandedParticles.push(particle);
+      
+      // Add trail particles if trails are enabled and particle has trails
+      if (settings.visual.trails.speedBased.enabled && particle.trailPositions && particle.trailPositions.length > 1) {
+        const spacing = Math.max(1, settings.visual.trails.speedBased.spacing || 1);
+        
+        for (let i = 0; i < particle.trailPositions.length - 1; i++) {
+          const currentPos = particle.trailPositions[i];
+          const nextPos = particle.trailPositions[i + 1];
+          
+          // Interpolate between current and next position based on spacing
+          for (let j = 0; j < spacing; j++) {
+            const t = j / spacing; // Interpolation factor (0 to 1)
+            const interpX = currentPos.x + (nextPos.x - currentPos.x) * t;
+            const interpY = currentPos.y + (nextPos.y - currentPos.y) * t;
+            const interpAlpha = currentPos.alpha + (nextPos.alpha - currentPos.alpha) * t;
+            
+            const trailParticle = {
+              ...particle,
+              x: interpX,
+              y: interpY,
+              opacity: particle.opacity * interpAlpha * 0.7, // Fade trail
+              speedBasedGlow: particle.speedBasedGlow * interpAlpha * 0.5, // Reduce trail glow
+              speedBasedBloom: particle.speedBasedBloom * interpAlpha * 0.3, // Reduce trail bloom
+              speedBasedTrailLength: (i + t) / particle.trailPositions.length // Use as trail position indicator
+            };
+            expandedParticles.push(trailParticle);
+          }
+        }
+      }
+    }
+    
+    // Update particle data with expanded list
+    this.updateParticleData(expandedParticles);
     
     // Setup instanced rendering
     if (this.instancedArraysExt) {
       this.setupInstancedRendering();
       // Draw
-      this.instancedArraysExt.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, 6, particles.length);
+      this.instancedArraysExt.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, 6, expandedParticles.length);
     } else {
       // Fallback: draw each particle individually
       this.setupBasicRendering();
-      for (let i = 0; i < particles.length; i++) {
-        this.updateSingleParticle(particles[i]);
+      for (let i = 0; i < expandedParticles.length; i++) {
+        this.updateSingleParticle(expandedParticles[i]);
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
       }
     }
@@ -403,6 +483,22 @@ export class WebGLRenderer {
       gl.vertexAttribPointer(this.attributes.glowIntensity, 1, gl.FLOAT, false, 0, 0);
       this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.glowIntensity, 1);
     }
+    
+    // Particle bloom intensity (instanced)
+    if (this.attributes.bloomIntensity >= 0) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.bloomIntensity);
+      gl.enableVertexAttribArray(this.attributes.bloomIntensity);
+      gl.vertexAttribPointer(this.attributes.bloomIntensity, 1, gl.FLOAT, false, 0, 0);
+      this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.bloomIntensity, 1);
+    }
+    
+    // Particle trail length (instanced)
+    if (this.attributes.trailLength >= 0) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.trailLength);
+      gl.enableVertexAttribArray(this.attributes.trailLength);
+      gl.vertexAttribPointer(this.attributes.trailLength, 1, gl.FLOAT, false, 0, 0);
+      this.instancedArraysExt.vertexAttribDivisorANGLE(this.attributes.trailLength, 1);
+    }
   }
 
   setupBasicRendering() {
@@ -428,6 +524,12 @@ export class WebGLRenderer {
     }
     if (this.uniforms.particleGlowIntensity) {
       gl.uniform1f(this.uniforms.particleGlowIntensity, particle.speedBasedGlow);
+    }
+    if (this.uniforms.particleBloomIntensity) {
+      gl.uniform1f(this.uniforms.particleBloomIntensity, particle.speedBasedBloom);
+    }
+    if (this.uniforms.particleTrailLength) {
+      gl.uniform1f(this.uniforms.particleTrailLength, particle.speedBasedTrailLength);
     }
     
     // Set particle color
