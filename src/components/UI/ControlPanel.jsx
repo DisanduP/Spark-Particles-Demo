@@ -118,7 +118,7 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             label="Max Particles"
             value={settings.particles.maxCount}
             min={50}
-            max={2000}
+            max={10000}
             step={1}
             path="particles.maxCount"
             onChange={handleSliderChange}
@@ -161,11 +161,22 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             label="Upward Force"
             value={settings.particles.upwardForce}
             min={0}
-            max={2}
+            max={3}
             step={0.01}
             path="particles.upwardForce"
             onChange={handleSliderChange}
             formatDisplay={(val) => val.toFixed(2)}
+          />
+
+          <SliderInput
+            label="Drag (Friction)"
+            value={settings.particles.drag ?? 0}
+            min={0}
+            max={5}
+            step={0.01}
+            path="particles.drag"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(2)}/s`}
           />
         </ControlSection>
 
@@ -341,19 +352,19 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
           <SliderInput
             label="Scale"
             value={settings.perlinNoise.scale}
-            min={0.001}
-            max={0.02}
-            step={0.0001}
+            min={0.01}
+            max={10}
+            step={0.01}
             path="perlinNoise.scale"
             onChange={handleSliderChange}
-            formatDisplay={(val) => val.toFixed(4)}
+            formatDisplay={(val) => val.toFixed(2)}
           />
 
           <SliderInput
             label="Horizontal Strength"
             value={settings.perlinNoise.strength.horizontal}
             min={0}
-            max={1}
+            max={5}
             step={0.01}
             path="perlinNoise.strength.horizontal"
             onChange={handleSliderChange}
@@ -364,7 +375,7 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             label="Vertical Strength"
             value={settings.perlinNoise.strength.vertical}
             min={0}
-            max={1}
+            max={5}
             step={0.01}
             path="perlinNoise.strength.vertical"
             onChange={handleSliderChange}
@@ -623,9 +634,9 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
       </div>
     </div>
       )}
-    
-    {/* Show tab when panel is hidden */}
-    {!isVisible && (
+      
+      {/* Show tab when panel is hidden */}
+      {!isVisible && (
       <div 
         className={`control-tab ${settings.theme.mode}`}
         onClick={handleShowPanel}

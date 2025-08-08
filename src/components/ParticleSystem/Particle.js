@@ -55,10 +55,7 @@ export class Particle {
       return null;
     }
 
-    // Apply upward force
-    this.vy -= settings.particles.upwardForce * deltaTime;
-    
-    // Apply Perlin noise force
+    // Apply Perlin noise force first so it's affected by drag
     if (noiseField) {
       const noiseForce = noiseField.getForceAt(
         this.x, 
@@ -70,9 +67,16 @@ export class Particle {
       this.vy += noiseForce.y * settings.perlinNoise.strength.vertical * deltaTime;
     }
     
-    // Apply velocity damping
-    this.vx *= 0.999;
-    this.vy *= 0.999;
+    // Apply velocity drag (friction) as exponential decay
+    const drag = Math.max(0, settings?.particles?.drag ?? 0);
+    if (drag > 0) {
+      const damp = Math.exp(-drag * deltaTime);
+      this.vx *= damp;
+      this.vy *= damp;
+    }
+    
+    // Apply upward force AFTER drag so it isn't diminished by friction
+    this.vy -= settings.particles.upwardForce * deltaTime;
     
     // Update position
     this.x += this.vx * deltaTime * 60; // Scale for 60fps equivalent

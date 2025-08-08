@@ -16,7 +16,8 @@ export const DEFAULT_SETTINGS = {
       speed: 2,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 0.2,
+    upwardForce: 1.95,
+    drag: 1.7, // Global friction (velocity decay rate per second). 0 = none, higher = stops faster
     spawnArea: {
       x: { min: 0, max: 1 }, // percentage of screen width
       y: { min: 1, max: 1.2 }  // percentage of screen height (below bottom edge)
@@ -33,18 +34,18 @@ export const DEFAULT_SETTINGS = {
   },
 
   perlinNoise: {
-    scale: 2,
+    scale: 3,
     strength: {
-      horizontal: 1,
+      horizontal: 2,
       vertical: 1
     },
-    speed: 0.3,
+    speed: 1.5,
     octaves: 3
   },
 
   mouseInteraction: {
     forceType: 'follow', // 'radial', 'directional', 'suction', 'sweep', 'follow', 'boids'
-    strength: 127,
+    strength: 282,
     radius: 122,
     falloffCurve: 2,
     clickSpawnCount: 50,
@@ -55,7 +56,7 @@ export const DEFAULT_SETTINGS = {
     follow: {
       // Spread of the influence behind the mouse movement
       // 0 = only directly behind, 1 = all around the mouse
-      spread: 0.2,
+      spread: 0.3,
       // Multiplier applied to the computed follow force
       strength: 15,
       // Additional suction toward the mouse during follow
