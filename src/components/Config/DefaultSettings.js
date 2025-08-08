@@ -94,7 +94,7 @@ export const DEFAULT_SETTINGS = {
         enabled: true,
         lengthMultiplier: 0.8, // Trail length multiplier based on speed
         minSpeedThreshold: 70, // Minimum speed to start showing trails
-        maxLength: 15, // Maximum trail length at high speeds
+        maxLength: 14, // Maximum trail length at high speeds
         colorShift: 10, // How much to cool the trail color (0 = same as particle, 1 = fully cooled)
         spacing: 4, // Number of particle duplications between trail positions for smoother trails
         opacityFalloff: 0.1 // How quickly opacity fades along trail (1.0 = linear, >1.0 = faster fade, <1.0 = slower fade)

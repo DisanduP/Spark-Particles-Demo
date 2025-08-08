@@ -371,14 +371,11 @@ export class WebGLRenderer {
       gl.uniform1i(this.uniforms.texture, 0);
     }
     
-    // Create expanded particle list including trails
+    // Create expanded particle list with trails rendered behind main particles
     let expandedParticles = [];
     
+    // First, add all trail particles (render behind)
     for (let particle of particles) {
-      // Add the main particle
-      expandedParticles.push(particle);
-      
-      // Add trail particles if trails are enabled and particle has trails
       if (settings.visual.trails.speedBased.enabled && particle.trailPositions && particle.trailPositions.length > 1) {
         const spacing = Math.max(1, settings.visual.trails.speedBased.spacing || 1);
         
@@ -406,6 +403,11 @@ export class WebGLRenderer {
           }
         }
       }
+    }
+    
+    // Then, add all main particles (render on top)
+    for (let particle of particles) {
+      expandedParticles.push(particle);
     }
     
     // Update particle data with expanded list
