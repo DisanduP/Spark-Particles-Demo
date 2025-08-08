@@ -1,4 +1,5 @@
 precision mediump float;
+precision mediump int;
 
 varying float v_life;
 varying float v_alpha;
@@ -15,6 +16,7 @@ uniform sampler2D u_texture;
 uniform bool u_useTexture;
 uniform vec3 u_bloomSettings; // [falloffDistance, colorShift, enabled]
 uniform vec2 u_trailSettings; // [colorShift, enabled]
+uniform int u_renderPass; // 0 = main particles, 1 = bloom pass
 
 float sparkleShape(vec2 uv) {
   vec2 center = uv - 0.5;
@@ -36,6 +38,21 @@ vec3 coolColor(vec3 color, float amount) {
   return cooled;
 }
 
+// Create bloom effect with smooth falloff for larger quads
+float bloomEffectLarge(vec2 uv, float falloffDistance, float intensity) {
+  vec2 center = uv - 0.5;
+  float dist = length(center);
+  
+  // Smooth falloff that extends beyond the quad bounds
+  // Use a more gradual exponential decay for smoother edges
+  float bloom = exp(-dist * falloffDistance * 0.5) * intensity;
+  
+  // Add a secondary, wider glow for ultra-smooth outer falloff
+  float outerGlow = exp(-dist * falloffDistance * 0.15) * intensity * 0.3;
+  
+  return bloom + outerGlow;
+}
+
 // Create bloom effect with falloff
 float bloomEffect(vec2 uv, float falloffDistance, float intensity) {
   vec2 center = uv - 0.5;
@@ -45,6 +62,21 @@ float bloomEffect(vec2 uv, float falloffDistance, float intensity) {
 }
 
 void main() {
+  // Bloom pass - render only the bloom effect on larger quads
+  if (u_renderPass == 1) {
+    if (u_bloomSettings.z > 0.5 && v_bloomIntensity > 0.0) { // enabled and has bloom
+      float bloom = bloomEffectLarge(v_uv, u_bloomSettings.x, v_bloomIntensity);
+      vec3 bloomColor = coolColor(v_color, u_bloomSettings.y);
+      
+      // Use additive blending for bloom effect
+      gl_FragColor = vec4(bloomColor * bloom * 0.4, bloom * 0.2);
+    } else {
+      discard; // Don't render particles without bloom in bloom pass
+    }
+    return;
+  }
+  
+  // Main particle pass
   float shape;
   
   if (u_useTexture) {
@@ -73,17 +105,6 @@ void main() {
   // Use per-particle glow intensity combined with global glow intensity
   float totalGlowIntensity = u_glowIntensity + v_glowIntensity;
   color += vec3(totalGlowIntensity * 0.3) * shape;
-  
-  // Apply bloom effect if enabled
-  if (u_bloomSettings.z > 0.5) { // enabled
-    float bloomIntensity = v_bloomIntensity;
-    if (bloomIntensity > 0.0) {
-      float bloom = bloomEffect(v_uv, u_bloomSettings.x, bloomIntensity);
-      vec3 bloomColor = coolColor(v_color, u_bloomSettings.y);
-      color += bloomColor * bloom * 0.5;
-      finalAlpha += bloom * 0.3; // Add bloom to alpha for outer glow
-    }
-  }
   
   // Apply trail effect if enabled (this would be better handled in a separate render pass)
   if (u_trailSettings.y > 0.5 && v_trailLength > 0.0) { // enabled and has trail

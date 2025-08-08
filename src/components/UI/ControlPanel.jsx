@@ -645,6 +645,17 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             </label>
           </div>
           
+          <SliderInput
+            label="Bloom Quad Size"
+            value={settings.visual.bloom.sizeMultiplier}
+            min={1}
+            max={6}
+            step={0.1}
+            path="visual.bloom.sizeMultiplier"
+            onChange={handleSliderChange}
+            formatDisplay={(val) => `${val.toFixed(1)}x`}
+          />
+          
           {settings.visual.bloom.speedBased.enabled && (
             <>
               <SliderInput

@@ -194,6 +194,8 @@ export class WebGLRenderer {
       useTexture: gl.getUniformLocation(this.program, 'u_useTexture'),
       bloomSettings: gl.getUniformLocation(this.program, 'u_bloomSettings'), // [falloffDistance, colorShift, enabled]
       trailSettings: gl.getUniformLocation(this.program, 'u_trailSettings'), // [colorShift, enabled]
+      renderPass: gl.getUniformLocation(this.program, 'u_renderPass'), // 0 = main, 1 = bloom
+      bloomSizeMultiplier: gl.getUniformLocation(this.program, 'u_bloomSizeMultiplier'), // How much bigger bloom quads should be
             // For non-instanced fallback
       particlePos: gl.getUniformLocation(this.program, 'u_particlePos'),
       particleSize: gl.getUniformLocation(this.program, 'u_particleSize'),
@@ -318,13 +320,14 @@ export class WebGLRenderer {
     // Clear canvas
     const bgColor = settings.theme.mode === 'dark'
       ? hexToRgb(settings.theme.backgroundColor.dark)
-      : hexToRgb(settings.theme.backgroundColor.light);    gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
+      : hexToRgb(settings.theme.backgroundColor.light);
+    gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
     // Use shader program
     gl.useProgram(this.program);
     
-    // Set uniforms
+    // Set common uniforms
     gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
     gl.uniformMatrix3fv(this.uniforms.transform, false, [1, 0, 0, 0, 1, 0, 0, 0, 1]);
     gl.uniform3f(this.uniforms.color, 1.0, 0.8, 0.3); // Default ember color
@@ -413,17 +416,45 @@ export class WebGLRenderer {
     // Update particle data with expanded list
     this.updateParticleData(expandedParticles);
     
-    // Setup instanced rendering
+    // PASS 1: Render bloom effects (larger quads, additive blending)
+    const bloomEnabled = settings.visual.bloom.speedBased.enabled;
+    if (bloomEnabled) {
+      // Enable additive blending for bloom
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+      
+      // Set bloom pass uniforms
+      gl.uniform1i(this.uniforms.renderPass, 1); // bloom pass
+      gl.uniform1f(this.uniforms.bloomSizeMultiplier, settings.visual.bloom.sizeMultiplier || 3.0);
+      
+      // Render bloom
+      if (this.instancedArraysExt) {
+        this.setupInstancedRendering();
+        this.instancedArraysExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 6, expandedParticles.length);
+      } else {
+        this.setupBasicRendering();
+        for (let i = 0; i < expandedParticles.length; i++) {
+          this.updateSingleParticle(expandedParticles[i]);
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+      }
+      
+      // Reset blending for main pass
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    }
+    
+    // PASS 2: Render main particles (normal size quads, normal blending)
+    gl.uniform1i(this.uniforms.renderPass, 0); // main pass
+    gl.uniform1f(this.uniforms.bloomSizeMultiplier, 1.0); // Normal size
+    
+    // Render main particles
     if (this.instancedArraysExt) {
       this.setupInstancedRendering();
-      // Draw
-      this.instancedArraysExt.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, 6, expandedParticles.length);
+      this.instancedArraysExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 6, expandedParticles.length);
     } else {
-      // Fallback: draw each particle individually
       this.setupBasicRendering();
       for (let i = 0; i < expandedParticles.length; i++) {
         this.updateSingleParticle(expandedParticles[i]);
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
     }
   }

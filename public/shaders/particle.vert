@@ -1,3 +1,6 @@
+precision mediump float;
+precision mediump int;
+
 attribute vec2 a_position;
 attribute vec2 a_particlePos;
 attribute float a_size;
@@ -12,6 +15,8 @@ attribute float a_trailLength;
 
 uniform vec2 u_resolution;
 uniform mat3 u_transform;
+uniform int u_renderPass; // 0 = main particles, 1 = bloom pass
+uniform float u_bloomSizeMultiplier; // How much bigger bloom quads should be
 
 // For non-instanced fallback
 uniform vec2 u_particlePos;
@@ -71,12 +76,18 @@ void main() {
   // Use constant size (no lifecycle scaling)
   float sizeScale = 1.0;
   
+  // For bloom pass, use larger quads to allow smooth falloff
+  float finalSize = size;
+  if (u_renderPass == 1) { // bloom pass
+    finalSize = size * u_bloomSizeMultiplier;
+  }
+  
   // Convert particle position to clip space coordinates (-1 to 1)
   vec2 clipPos = (particlePos / u_resolution) * 2.0 - 1.0;
   clipPos.y = -clipPos.y; // Flip Y to match screen coordinates
   
   // Calculate particle offset in pixels, then convert to clip space
-  vec2 particleOffset = rotatedPos * size * sizeScale;
+  vec2 particleOffset = rotatedPos * finalSize * sizeScale;
   
   // Convert pixel offset to clip space, maintaining aspect ratio
   vec2 clipOffset;

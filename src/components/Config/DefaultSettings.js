@@ -79,19 +79,20 @@ export const DEFAULT_SETTINGS = {
     bloom: {
       intensity: 1.5,
       radius: 8,
+      sizeMultiplier: 5.2, // How much larger bloom quads should be (for smooth falloff)
       speedBased: {
-        enabled: false,
-        falloffDistance: 7, // Falloff distance multiplier (relative to particle size)
+        enabled: true,
+        falloffDistance: 18, // Falloff distance multiplier (relative to particle size)
         colorShift: 1, // How much to reduce red tones (0 = no shift, 1 = full shift to cooler)
-        minSpeedThreshold: 135, // Minimum speed to start applying bloom
-        maxIntensity: 20 // Maximum bloom intensity at high speeds
+        minSpeedThreshold: 100, // Minimum speed to start applying bloom
+        maxIntensity: 2.3 // Maximum bloom intensity at high speeds
       }
     },
     trails: {
       length: 20,
       fadeRate: 0.95,
       speedBased: {
-        enabled: true,
+        enabled: false,
         lengthMultiplier: 0.8, // Trail length multiplier based on speed
         minSpeedThreshold: 70, // Minimum speed to start showing trails
         maxLength: 14, // Maximum trail length at high speeds
@@ -105,7 +106,7 @@ export const DEFAULT_SETTINGS = {
       intensity: 0,
       speedBased: {
         enabled: true,
-        maxIntensity: 10,
+        maxIntensity: 2,
         minSpeedThreshold: 85 // Minimum speed to start applying glow
       }
     },
