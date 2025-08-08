@@ -315,9 +315,18 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         hasMoved: false, // Track if this touch has actually moved
         isFirstMove: true // Flag to skip velocity calculation on first move
       });
-      
-      // Start spawning at touch position (but don't apply force yet)
-      particleManagerRef.current.startMouseSpawning(touchX, touchY);
+    }
+    
+    // Check if we now have two or more fingers - start spawning at first finger's position
+    if (activeTouchesRef.current.size >= 2) {
+      // Get the first touch (chronologically first one added)
+      const firstTouch = activeTouchesRef.current.values().next().value;
+      if (firstTouch) {
+        particleManagerRef.current.startMouseSpawning(firstTouch.x, firstTouch.y);
+      }
+    } else {
+      // Single finger - stop any existing spawning
+      particleManagerRef.current.stopMouseSpawning();
     }
   };
 
@@ -353,7 +362,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
           touchData.hasMoved = true;
         }
         
-        // Calculate touch velocity, but only apply force if actually moving
+        // Calculate touch velocity for force application
         let velocity = { x: 0, y: 0, speed: 0 };
         
         if (touchData.hasMoved && !touchData.isFirstMove) {
@@ -362,7 +371,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
           const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
           velocity = { x: velocityX, y: velocityY, speed };
           
-          // Apply force for this touch only if it's actually moving
+          // Apply force for this touch (works for both single and multi-touch)
           particleManagerRef.current.applyForce(
             touchX,
             touchY,
@@ -372,15 +381,20 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
           );
         }
         
-        // Update spawn position for this touch
-        particleManagerRef.current.updateMouseSpawnPosition(touchX, touchY);
-        
         // Update stored touch data
         touchData.lastX = touchX;
         touchData.lastY = touchY;
         touchData.x = touchX;
         touchData.y = touchY;
         touchData.isFirstMove = false;
+      }
+    }
+    
+    // Update spawn position if we have 2+ fingers (always use first finger's position)
+    if (activeTouchesRef.current.size >= 2) {
+      const firstTouch = activeTouchesRef.current.values().next().value;
+      if (firstTouch) {
+        particleManagerRef.current.updateMouseSpawnPosition(firstTouch.x, firstTouch.y);
       }
     }
   };
@@ -394,8 +408,16 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       activeTouchesRef.current.delete(touch.identifier);
     }
     
-    // Stop spawning if no more active touches
-    if (activeTouchesRef.current.size === 0) {
+    // Check touch count after removal
+    if (activeTouchesRef.current.size >= 2) {
+      // Still have 2+ fingers, keep spawning at first finger's position
+      const firstTouch = activeTouchesRef.current.values().next().value;
+      if (firstTouch) {
+        // Make sure spawning is still active at the first finger's position
+        particleManagerRef.current.updateMouseSpawnPosition(firstTouch.x, firstTouch.y);
+      }
+    } else {
+      // Less than 2 fingers remaining, stop spawning
       particleManagerRef.current.stopMouseSpawning();
     }
   };
