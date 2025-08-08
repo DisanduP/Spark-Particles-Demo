@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS = {
   },
 
   mouseInteraction: {
-    forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep', 'follow'
+    forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep', 'follow', 'boids'
     strength: 9,
     radius: 220,
     falloffCurve: 2,
@@ -60,6 +60,16 @@ export const DEFAULT_SETTINGS = {
       strength: 2.0,
       // Additional suction toward the mouse during follow
       suctionStrength: 0
+    },
+    boids: {
+      // Maximum flocking speed (pixels per second) for particles influenced by Boids
+      speedLimit: 220,
+      // Steering weights
+      weights: {
+        separation: 1.5,
+        alignment: 1.0,
+        cohesion: 1.2
+      }
     }
   },
 

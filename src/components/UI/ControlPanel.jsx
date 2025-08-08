@@ -397,6 +397,7 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
               <option value="directional">Directional</option>
               <option value="sweep">Sweep</option>
               <option value="follow">Follow</option>
+              <option value="boids">Boids</option>
             </select>
           </div>
 
@@ -494,6 +495,55 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
                 path="mouseInteraction.follow.suctionStrength"
                 onChange={handleSliderChange}
                 formatDisplay={(val) => val.toFixed(0)}
+              />
+            </>
+          )}
+
+          {/* Boids-specific controls */}
+          {settings.mouseInteraction.forceType === 'boids' && (
+            <>
+              <SliderInput
+                label="Flocking Speed Limit"
+                value={settings.mouseInteraction.boids.speedLimit}
+                min={20}
+                max={600}
+                step={5}
+                path="mouseInteraction.boids.speedLimit"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val.toFixed(0)} px/s`}
+              />
+
+              <SliderInput
+                label="Separation Weight"
+                value={settings.mouseInteraction.boids.weights.separation}
+                min={0}
+                max={5}
+                step={0.1}
+                path="mouseInteraction.boids.weights.separation"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+
+              <SliderInput
+                label="Alignment Weight"
+                value={settings.mouseInteraction.boids.weights.alignment}
+                min={0}
+                max={5}
+                step={0.1}
+                path="mouseInteraction.boids.weights.alignment"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+
+              <SliderInput
+                label="Cohesion Weight"
+                value={settings.mouseInteraction.boids.weights.cohesion}
+                min={0}
+                max={5}
+                step={0.1}
+                path="mouseInteraction.boids.weights.cohesion"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
               />
             </>
           )}

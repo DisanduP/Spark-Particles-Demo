@@ -175,6 +175,140 @@ export class ParticleManager {
       case 'follow':
         this.applyFollowForce(mouseX, mouseY, forceSettings, mouseVelocity);
         break;
+      case 'boids':
+        this.applyBoidsForce(mouseX, mouseY, forceSettings);
+        break;
+    }
+  }
+
+  applyBoidsForce(mouseX, mouseY, forceSettings) {
+    const { radius, falloffCurve, boids } = forceSettings;
+    const speedLimit = Math.max(0, boids?.speedLimit ?? 200); // px/s
+
+    if (speedLimit <= 0) return;
+
+    // Neighborhood parameters derived from radius
+    const neighborRadius = Math.max(10, radius * 0.5);
+    const separationRadius = Math.max(5, neighborRadius * 0.5);
+
+    // Steering weights from settings
+    const wSeparation = Math.max(0, boids?.weights?.separation ?? 1.5);
+    const wAlignment = Math.max(0, boids?.weights?.alignment ?? 1.0);
+    const wCohesion = Math.max(0, boids?.weights?.cohesion ?? 1.2); // toward mouse target
+
+    const maxVel = speedLimit / 60; // convert px/s to px/frame
+    const maxSteer = maxVel * 0.15; // steering cap per frame
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+
+      // Influence only within radius of mouse
+      const dxm = p.x - mouseX;
+      const dym = p.y - mouseY;
+      const distToMouse = Math.sqrt(dxm * dxm + dym * dym);
+      if (distToMouse <= 0 || distToMouse > radius) continue;
+
+      // Falloff factor by distance to mouse
+      const normalizedDistance = distToMouse / radius;
+      const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+
+      // Accumulators
+      let sepX = 0, sepY = 0; // separation
+      let alignX = 0, alignY = 0; // alignment (sum of neighbor velocities)
+      let alignCount = 0;
+
+      // Find neighbors
+      for (let j = 0; j < this.particles.length; j++) {
+        if (i === j) continue;
+        const n = this.particles[j];
+
+        const dx = n.x - p.x;
+        const dy = n.y - p.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d === 0 || d > neighborRadius) continue;
+
+        // Alignment: average velocities
+        alignX += n.vx;
+        alignY += n.vy;
+        alignCount++;
+
+        // Separation: push away if too close
+        if (d < separationRadius) {
+          const inv = 1 / d;
+          // Stronger push when closer
+          const strength = (separationRadius - d) / separationRadius;
+          sepX -= (dx * inv) * strength;
+          sepY -= (dy * inv) * strength;
+        }
+      }
+
+      // Desired velocity components (px/frame)
+      let desiredSepX = 0, desiredSepY = 0;
+      if (sepX !== 0 || sepY !== 0) {
+        const mag = Math.sqrt(sepX * sepX + sepY * sepY) || 1;
+        desiredSepX = (sepX / mag) * maxVel;
+        desiredSepY = (sepY / mag) * maxVel;
+      }
+
+      let desiredAlignX = 0, desiredAlignY = 0;
+      if (alignCount > 0) {
+        const avgVX = alignX / alignCount;
+        const avgVY = alignY / alignCount;
+        const mag = Math.sqrt(avgVX * avgVX + avgVY * avgVY);
+        if (mag > 0) {
+          desiredAlignX = (avgVX / mag) * maxVel;
+          desiredAlignY = (avgVY / mag) * maxVel;
+        }
+      }
+
+      // Cohesion toward mouse target
+      let desiredCohX = 0, desiredCohY = 0;
+      const toMouseX = -dxm;
+      const toMouseY = -dym;
+      const toMag = Math.sqrt(toMouseX * toMouseX + toMouseY * toMouseY);
+      if (toMag > 0) {
+        desiredCohX = (toMouseX / toMag) * maxVel;
+        desiredCohY = (toMouseY / toMag) * maxVel;
+      }
+
+      // Current velocity
+      const vx = p.vx;
+      const vy = p.vy;
+
+      // Steering forces = desired - current
+      let steerX = 0;
+      let steerY = 0;
+
+      steerX += (desiredSepX - vx) * wSeparation;
+      steerY += (desiredSepY - vy) * wSeparation;
+
+      steerX += (desiredAlignX - vx) * wAlignment;
+      steerY += (desiredAlignY - vy) * wAlignment;
+
+      steerX += (desiredCohX - vx) * wCohesion;
+      steerY += (desiredCohY - vy) * wCohesion;
+
+      // Apply falloff
+      steerX *= falloff;
+      steerY *= falloff;
+
+      // Limit steer
+      const steerMag = Math.sqrt(steerX * steerX + steerY * steerY);
+      if (steerMag > maxSteer && steerMag > 0) {
+        const s = maxSteer / steerMag;
+        steerX *= s;
+        steerY *= s;
+      }
+
+      p.applyForce(steerX, steerY);
+
+      // Enforce speed limit within influence
+      const sp = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (sp > maxVel && sp > 0) {
+        const s = maxVel / sp;
+        p.vx *= s;
+        p.vy *= s;
+      }
     }
   }
 
