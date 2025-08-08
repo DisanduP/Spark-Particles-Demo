@@ -396,6 +396,7 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
               <option value="suction">Suction</option>
               <option value="directional">Directional</option>
               <option value="sweep">Sweep</option>
+              <option value="follow">Follow</option>
             </select>
           </div>
 
@@ -455,6 +456,44 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
                 path="mouseInteraction.sweep.directionalSpread"
                 onChange={handleSliderChange}
                 formatDisplay={(val) => val.toFixed(1)}
+              />
+            </>
+          )}
+
+          {/* Follow-specific controls */}
+          {settings.mouseInteraction.forceType === 'follow' && (
+            <>
+              <SliderInput
+                label="Follow Spread"
+                value={settings.mouseInteraction.follow.spread}
+                min={0.0}
+                max={1.0}
+                step={0.1}
+                path="mouseInteraction.follow.spread"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+
+              <SliderInput
+                label="Follow Strength"
+                value={settings.mouseInteraction.follow.strength}
+                min={0.1}
+                max={10.0}
+                step={0.1}
+                path="mouseInteraction.follow.strength"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+
+              <SliderInput
+                label="Suction Strength"
+                value={settings.mouseInteraction.follow.suctionStrength}
+                min={0}
+                max={500}
+                step={1}
+                path="mouseInteraction.follow.suctionStrength"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(0)}
               />
             </>
           )}

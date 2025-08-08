@@ -172,6 +172,9 @@ export class ParticleManager {
       case 'sweep':
         this.applySweepForce(mouseX, mouseY, forceSettings, mouseVelocity);
         break;
+      case 'follow':
+        this.applyFollowForce(mouseX, mouseY, forceSettings, mouseVelocity);
+        break;
     }
   }
 
@@ -260,6 +263,61 @@ export class ParticleManager {
         
         particle.applyForce(totalForceX, totalForceY);
       }
+    }
+  }
+
+  applyFollowForce(mouseX, mouseY, forceSettings, mouseVelocity) {
+    // No force when stationary; particles keep moving from accumulated velocity
+    if (!mouseVelocity || mouseVelocity.speed <= 0) return;
+
+    const { strength, radius, falloffCurve, follow } = forceSettings;
+    const spread = Math.max(0, Math.min(1, follow?.spread ?? 1));
+    const followStrength = Math.max(0, follow?.strength ?? 1);
+    const suctionStrength = Math.max(0, follow?.suctionStrength ?? 0);
+
+    // Mouse direction and speed
+    const speed = mouseVelocity.speed;
+    const dirX = speed > 0 ? mouseVelocity.x / speed : 0;
+    const dirY = speed > 0 ? mouseVelocity.y / speed : 0;
+
+    // Force magnitude capped at mouse speed, scaled by strength and followStrength
+    const baseFollowMag = Math.min(speed * strength, speed) * followStrength * 0.01; // scale to match existing forces
+
+    for (const particle of this.particles) {
+      const dx = particle.x - mouseX;
+      const dy = particle.y - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance <= 0 || distance > radius) continue;
+
+      // Falloff by distance
+      const normalizedDistance = distance / radius;
+      const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+
+      // Direction from mouse to particle (radial)
+      const radialDirX = dx / distance;
+      const radialDirY = dy / distance;
+
+      // We want particles primarily behind the motion (opposite the movement direction)
+      const backwardDirX = -dirX;
+      const backwardDirY = -dirY;
+      const alignmentBehind = Math.max(0, radialDirX * backwardDirX + radialDirY * backwardDirY);
+      const spreadWeight = spread + (1 - spread) * alignmentBehind;
+
+      // Follow component (moves along mouse direction)
+      const followForceX = dirX * baseFollowMag * falloff * spreadWeight;
+      const followForceY = dirY * baseFollowMag * falloff * spreadWeight;
+
+      // Suction component (pulls toward mouse like suction mode)
+      let suctionForceX = 0, suctionForceY = 0;
+      if (suctionStrength > 0) {
+        const suctionMag = suctionStrength * falloff * 0.01;
+        const toMouseX = -radialDirX; // (mouseX - particle.x) / distance
+        const toMouseY = -radialDirY; // (mouseY - particle.y) / distance
+        suctionForceX = toMouseX * suctionMag;
+        suctionForceY = toMouseY * suctionMag;
+      }
+
+      particle.applyForce(followForceX + suctionForceX, followForceY + suctionForceY);
     }
   }
 

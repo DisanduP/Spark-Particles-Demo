@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS = {
   },
 
   mouseInteraction: {
-    forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep'
+    forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep', 'follow'
     strength: 9,
     radius: 220,
     falloffCurve: 2,
@@ -51,6 +51,15 @@ export const DEFAULT_SETTINGS = {
     sweep: {
       speedMultiplier: 8,  // How much mouse speed affects force strength
       directionalSpread: 0.8 // How focused the directional force is (0 = tight beam, 1 = wide spread)
+    },
+    follow: {
+      // Spread of the influence behind the mouse movement
+      // 0 = only directly behind, 1 = all around the mouse
+      spread: 0.8,
+      // Multiplier applied to the computed follow force
+      strength: 2.0,
+      // Additional suction toward the mouse during follow
+      suctionStrength: 0
     }
   },
 
