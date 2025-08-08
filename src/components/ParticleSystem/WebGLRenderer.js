@@ -376,6 +376,7 @@ export class WebGLRenderer {
     
     // Create expanded particle list with trails rendered behind main particles
     let expandedParticles = [];
+    let mainParticles = [];
     
     // First, add all trail particles (render behind)
     for (let particle of particles) {
@@ -399,24 +400,23 @@ export class WebGLRenderer {
               y: interpY,
               opacity: particle.opacity * interpAlpha * 0.7, // Fade trail
               speedBasedGlow: particle.speedBasedGlow * interpAlpha * 0.5, // Reduce trail glow
-              speedBasedBloom: particle.speedBasedBloom * interpAlpha * 0.3, // Reduce trail bloom
+              speedBasedBloom: 0, // No bloom for trails to prevent double rendering
               speedBasedTrailLength: (i + t) / particle.trailPositions.length // Use as trail position indicator
             };
             expandedParticles.push(trailParticle);
           }
         }
       }
+      // Keep main particles separate for bloom pass
+      mainParticles.push(particle);
     }
     
     // Then, add all main particles (render on top)
-    for (let particle of particles) {
+    for (let particle of mainParticles) {
       expandedParticles.push(particle);
     }
     
-    // Update particle data with expanded list
-    this.updateParticleData(expandedParticles);
-    
-    // PASS 1: Render bloom effects (larger quads, additive blending)
+    // PASS 1: Render bloom effects (larger quads, additive blending) - ONLY main particles
     const bloomEnabled = settings.visual.bloom.speedBased.enabled;
     if (bloomEnabled) {
       // Enable additive blending for bloom
@@ -426,14 +426,17 @@ export class WebGLRenderer {
       gl.uniform1i(this.uniforms.renderPass, 1); // bloom pass
       gl.uniform1f(this.uniforms.bloomSizeMultiplier, settings.visual.bloom.sizeMultiplier || 3.0);
       
+      // Update particle data with ONLY main particles for bloom pass
+      this.updateParticleData(mainParticles);
+      
       // Render bloom
       if (this.instancedArraysExt) {
         this.setupInstancedRendering();
-        this.instancedArraysExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 6, expandedParticles.length);
+        this.instancedArraysExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 6, mainParticles.length);
       } else {
         this.setupBasicRendering();
-        for (let i = 0; i < expandedParticles.length; i++) {
-          this.updateSingleParticle(expandedParticles[i]);
+        for (let i = 0; i < mainParticles.length; i++) {
+          this.updateSingleParticle(mainParticles[i]);
           gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
       }
@@ -442,11 +445,14 @@ export class WebGLRenderer {
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
     
-    // PASS 2: Render main particles (normal size quads, normal blending)
+    // PASS 2: Render all particles (trails + main) with normal blending
     gl.uniform1i(this.uniforms.renderPass, 0); // main pass
     gl.uniform1f(this.uniforms.bloomSizeMultiplier, 1.0); // Normal size
     
-    // Render main particles
+    // Update particle data with expanded list (trails + main)
+    this.updateParticleData(expandedParticles);
+    
+    // Render all particles
     if (this.instancedArraysExt) {
       this.setupInstancedRendering();
       this.instancedArraysExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 6, expandedParticles.length);
