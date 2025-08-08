@@ -20,9 +20,10 @@ npm run dev
 
 ### Usage
 
-#### Mouse Interactions
-- **Click**: Spawn new particles at mouse position
-- **Mouse Move**: Apply force to nearby particles (configurable force type)
+#### Mouse & Touch Interactions
+- **Click/Tap**: Spawn new particles at cursor/finger position
+- **Mouse Move/Touch Drag**: Apply force to nearby particles (configurable force type)
+- **Multi-touch**: Support for multiple simultaneous touch points on mobile devices
 
 #### Control Panel
 The right-side control panel allows real-time adjustment of:
@@ -34,9 +35,11 @@ The right-side control panel allows real-time adjustment of:
 - **Visual Effects**: Glow intensity, bloom effects
 - **Configuration**: Export/import settings, reset to defaults
 
-#### Mouse Force Types
-- **Radial Push**: Pushes particles away from mouse position
-- **Suction**: Pulls particles toward mouse position  
+#### Force Types (Mouse & Touch)
+- **Radial Push**: Pushes particles away from cursor/finger position
+- **Suction**: Pulls particles toward cursor/finger position  
 - **Directional**: Applies consistent directional force
-- **Sweep**: Dynamic force based on mouse movement speed and direction
+- **Sweep**: Dynamic force based on movement speed and direction
+- **Follow**: Particles follow behind cursor/finger movement
+- **Boids**: Flocking behavior influenced by cursor/finger position
 

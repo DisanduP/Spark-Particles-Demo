@@ -22,6 +22,7 @@
 - [x] Real-time parameter adjustment
 - [x] Mouse click particle spawning
 - [x] Mouse hover force application
+- [x] Touch and multi-touch support for mobile devices
 - [x] Theme switching
 - [x] Settings persistence
 
@@ -57,7 +58,7 @@
 
 The basic particle system is working! You can:
 
-1. **Interact with particles**: Click to spawn, move mouse to push
+1. **Interact with particles**: Click/tap to spawn, move mouse/finger to push (supports multi-touch)
 2. **Adjust settings**: Use the control panel to tweak all parameters
 3. **Switch themes**: Dark/light mode toggle
 4. **Export/Import**: Save your configurations as JSON files
@@ -66,8 +67,8 @@ The system supports hundreds to thousands of particles with smooth performance, 
 
 ## 🐛 Known Issues
 
-- Mobile touch interactions need refinement
 - Performance could be better on older devices
+- Control panel UI could be optimized for mobile
 
 ## 🚀 Ready for Development
 

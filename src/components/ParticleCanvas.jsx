@@ -19,6 +19,9 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const mouseVelocityRef = useRef({ x: 0, y: 0, speed: 0 });
   
+  // Track active touches for multi-touch support
+  const activeTouchesRef = useRef(new Map());
+  
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState(null);
   const [statusInfo, setStatusInfo] = useState({
@@ -162,62 +165,194 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     rendererRef.current?.dispose();
   };
 
-  // Mouse event handlers
-  const handleMouseMove = (event) => {
-    if (!particleManagerRef.current || !configManagerRef.current) return;
-
+  // Helper function to get pointer position from event
+  const getPointerPosition = (event) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    
+    // Handle both mouse and touch events
+    let clientX, clientY;
+    
+    if (event.touches && event.touches.length > 0) {
+      // Touch event - use first touch
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else if (event.changedTouches && event.changedTouches.length > 0) {
+      // Touch end event - use first changed touch
+      clientX = event.changedTouches[0].clientX;
+      clientY = event.changedTouches[0].clientY;
+    } else {
+      // Mouse event
+      clientX = event.clientX;
+      clientY = event.clientY;
+    }
+    
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
 
-    // Calculate mouse velocity
+  // Unified pointer move handler for both mouse and touch
+  const handlePointerMove = (event) => {
+    if (!particleManagerRef.current || !configManagerRef.current) return;
+
+    const position = getPointerPosition(event);
+    const { x: pointerX, y: pointerY } = position;
+
+    // Calculate pointer velocity
     const lastPos = lastMousePosRef.current;
-    const velocityX = mouseX - lastPos.x;
-    const velocityY = mouseY - lastPos.y;
+    const velocityX = pointerX - lastPos.x;
+    const velocityY = pointerY - lastPos.y;
     const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
     
     // Update velocity tracking
     mouseVelocityRef.current = { x: velocityX, y: velocityY, speed };
-    lastMousePosRef.current = { x: mouseX, y: mouseY };
+    lastMousePosRef.current = { x: pointerX, y: pointerY };
 
     const settings = configManagerRef.current.getSettings();
     particleManagerRef.current.applyForce(
-      mouseX, 
-      mouseY, 
+      pointerX, 
+      pointerY, 
       settings.mouseInteraction.forceType,
       settings.mouseInteraction,
       mouseVelocityRef.current
     );
 
-    // Update mouse spawn position if actively spawning
-    particleManagerRef.current.updateMouseSpawnPosition(mouseX, mouseY);
+    // Update spawn position if actively spawning
+    particleManagerRef.current.updateMouseSpawnPosition(pointerX, pointerY);
   };
 
-  const handleMouseDown = (event) => {
+  // Unified pointer down handler for both mouse and touch
+  const handlePointerDown = (event) => {
     if (!particleManagerRef.current || !configManagerRef.current) return;
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    // Prevent default touch behavior (scrolling, zooming)
+    if (event.type === 'touchstart') {
+      event.preventDefault();
+    }
 
-    // Start continuous spawning at mouse position
-    particleManagerRef.current.startMouseSpawning(mouseX, mouseY);
+    const position = getPointerPosition(event);
+    const { x: pointerX, y: pointerY } = position;
+
+    // Start continuous spawning at pointer position
+    particleManagerRef.current.startMouseSpawning(pointerX, pointerY);
   };
 
-  const handleMouseUp = (event) => {
+  // Unified pointer up handler for both mouse and touch
+  const handlePointerUp = (event) => {
     if (!particleManagerRef.current) return;
     
     // Stop continuous spawning
     particleManagerRef.current.stopMouseSpawning();
   };
 
+  // Mouse event handlers (delegating to unified handlers)
+  const handleMouseMove = (event) => handlePointerMove(event);
+  const handleMouseDown = (event) => handlePointerDown(event);
+  const handleMouseUp = (event) => handlePointerUp(event);
+
   const handleMouseLeave = (event) => {
     if (!particleManagerRef.current) return;
     
     // Stop spawning when mouse leaves canvas
     particleManagerRef.current.stopMouseSpawning();
+  };
+
+  // Touch event handlers with multi-touch support
+  const handleTouchStart = (event) => {
+    if (!particleManagerRef.current || !configManagerRef.current) return;
+    
+    // Prevent default touch behavior (scrolling, zooming)
+    event.preventDefault();
+    
+    // Handle all new touches
+    for (let i = 0; i < event.changedTouches.length; i++) {
+      const touch = event.changedTouches[i];
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const touchX = touch.clientX - rect.left;
+      const touchY = touch.clientY - rect.top;
+      
+      // Store touch data
+      activeTouchesRef.current.set(touch.identifier, {
+        x: touchX,
+        y: touchY,
+        lastX: touchX,
+        lastY: touchY
+      });
+      
+      // Start spawning at touch position
+      particleManagerRef.current.startMouseSpawning(touchX, touchY);
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (!particleManagerRef.current || !configManagerRef.current) return;
+    
+    // Prevent default touch behavior (scrolling)
+    event.preventDefault();
+    
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const settings = configManagerRef.current.getSettings();
+    
+    // Handle all moving touches
+    for (let i = 0; i < event.changedTouches.length; i++) {
+      const touch = event.changedTouches[i];
+      const touchData = activeTouchesRef.current.get(touch.identifier);
+      
+      if (touchData) {
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+        
+        // Calculate touch velocity
+        const velocityX = touchX - touchData.lastX;
+        const velocityY = touchY - touchData.lastY;
+        const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+        
+        // Update velocity tracking
+        const velocity = { x: velocityX, y: velocityY, speed };
+        
+        // Apply force for this touch
+        particleManagerRef.current.applyForce(
+          touchX,
+          touchY,
+          settings.mouseInteraction.forceType,
+          settings.mouseInteraction,
+          velocity
+        );
+        
+        // Update spawn position for this touch
+        particleManagerRef.current.updateMouseSpawnPosition(touchX, touchY);
+        
+        // Update stored touch data
+        touchData.lastX = touchX;
+        touchData.lastY = touchY;
+        touchData.x = touchX;
+        touchData.y = touchY;
+      }
+    }
+  };
+
+  const handleTouchEnd = (event) => {
+    if (!particleManagerRef.current) return;
+    
+    // Handle all ended touches
+    for (let i = 0; i < event.changedTouches.length; i++) {
+      const touch = event.changedTouches[i];
+      activeTouchesRef.current.delete(touch.identifier);
+    }
+    
+    // Stop spawning if no more active touches
+    if (activeTouchesRef.current.size === 0) {
+      particleManagerRef.current.stopMouseSpawning();
+    }
+  };
+
+  const handleTouchCancel = (event) => {
+    // Treat touch cancel the same as touch end
+    handleTouchEnd(event);
   };
 
   // Resize handler
@@ -233,8 +368,19 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       }
     };
 
+    // Global touch end handler to ensure spawning stops even if touch is released outside canvas
+    const handleGlobalTouchEnd = () => {
+      if (particleManagerRef.current) {
+        // Clear all active touches
+        activeTouchesRef.current.clear();
+        particleManagerRef.current.stopMouseSpawning();
+      }
+    };
+
     window.addEventListener('resize', handleResize);
     window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('touchend', handleGlobalTouchEnd);
+    window.addEventListener('touchcancel', handleGlobalTouchEnd);
     
     // Also use ResizeObserver to watch the canvas container
     const canvas = canvasRef.current;
@@ -248,6 +394,8 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       return () => {
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('mouseup', handleGlobalMouseUp);
+        window.removeEventListener('touchend', handleGlobalTouchEnd);
+        window.removeEventListener('touchcancel', handleGlobalTouchEnd);
         resizeObserver.disconnect();
       };
     }
@@ -255,6 +403,8 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchend', handleGlobalTouchEnd);
+      window.removeEventListener('touchcancel', handleGlobalTouchEnd);
     };
   }, []);
 
@@ -308,11 +458,19 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         style={{
           width: '100%',
           height: '100%',
           display: 'block',
-          cursor: 'crosshair'
+          cursor: 'crosshair',
+          touchAction: 'none', // Prevent default touch behaviors like scrolling
+          WebkitTouchCallout: 'none', // Prevent iOS callout menu
+          WebkitUserSelect: 'none', // Prevent text selection
+          userSelect: 'none'
         }}
       />
       {/* Status Display */}
