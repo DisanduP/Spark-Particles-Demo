@@ -46,7 +46,7 @@ export const DEFAULT_SETTINGS = {
   mouseInteraction: {
     forceType: 'follow', // 'radial', 'directional', 'suction', 'sweep', 'follow', 'boids'
     strength: 282,
-    radius: 122,
+    radius: 207,
     falloffCurve: 2,
     clickSpawnCount: 50,
     sweep: {
