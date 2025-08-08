@@ -2,10 +2,10 @@ export const DEFAULT_SETTINGS = {
   version: "1.0",
   
   particles: {
-    maxCount: 2000,
+    maxCount: 5000,
     spawnRate: 39, // particles per second
     lifetime: {
-      min: 5,
+      min: 8.1,
       max: 15
     },
     size: {
@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS = {
       speed: 2,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 0.15,
+    upwardForce: 0.2,
     spawnArea: {
       x: { min: 0, max: 1 }, // percentage of screen width
       y: { min: 1, max: 1.2 }  // percentage of screen height (below bottom edge)
@@ -43,11 +43,11 @@ export const DEFAULT_SETTINGS = {
   },
 
   mouseInteraction: {
-    forceType: 'sweep', // 'radial', 'directional', 'suction', 'sweep', 'follow', 'boids'
-    strength: 9,
-    radius: 220,
+    forceType: 'follow', // 'radial', 'directional', 'suction', 'sweep', 'follow', 'boids'
+    strength: 127,
+    radius: 122,
     falloffCurve: 2,
-    clickSpawnCount: 40,
+    clickSpawnCount: 50,
     sweep: {
       speedMultiplier: 8,  // How much mouse speed affects force strength
       directionalSpread: 0.8 // How focused the directional force is (0 = tight beam, 1 = wide spread)
@@ -55,20 +55,20 @@ export const DEFAULT_SETTINGS = {
     follow: {
       // Spread of the influence behind the mouse movement
       // 0 = only directly behind, 1 = all around the mouse
-      spread: 0.8,
+      spread: 0.2,
       // Multiplier applied to the computed follow force
-      strength: 2.0,
+      strength: 15,
       // Additional suction toward the mouse during follow
-      suctionStrength: 0
+      suctionStrength: 4
     },
     boids: {
       // Maximum flocking speed (pixels per second) for particles influenced by Boids
-      speedLimit: 220,
+      speedLimit: 330,
       // Steering weights
       weights: {
-        separation: 1.5,
-        alignment: 1.0,
-        cohesion: 1.2
+        separation: 0.7,
+        alignment: 4.3,
+        cohesion: 2.2
       }
     }
   },
