@@ -310,10 +310,13 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         y: touchY,
         lastX: touchX,
         lastY: touchY,
+        startX: touchX, // Track starting position
+        startY: touchY,
+        hasMoved: false, // Track if this touch has actually moved
         isFirstMove: true // Flag to skip velocity calculation on first move
       });
       
-      // Start spawning at touch position
+      // Start spawning at touch position (but don't apply force yet)
       particleManagerRef.current.startMouseSpawning(touchX, touchY);
     }
   };
@@ -337,24 +340,37 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
         
-        // Calculate touch velocity, but skip on first move to prevent large jumps
+        // Check if this is actual movement (not just a tiny touch variation)
+        const moveDistance = Math.sqrt(
+          Math.pow(touchX - touchData.startX, 2) + 
+          Math.pow(touchY - touchData.startY, 2)
+        );
+        
+        // Only start applying forces if touch has moved significantly (more than 5 pixels)
+        const isSignificantMove = moveDistance > 5;
+        
+        if (isSignificantMove) {
+          touchData.hasMoved = true;
+        }
+        
+        // Calculate touch velocity, but only apply force if actually moving
         let velocity = { x: 0, y: 0, speed: 0 };
         
-        if (!touchData.isFirstMove) {
+        if (touchData.hasMoved && !touchData.isFirstMove) {
           const velocityX = touchX - touchData.lastX;
           const velocityY = touchY - touchData.lastY;
           const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
           velocity = { x: velocityX, y: velocityY, speed };
+          
+          // Apply force for this touch only if it's actually moving
+          particleManagerRef.current.applyForce(
+            touchX,
+            touchY,
+            settings.mouseInteraction.forceType,
+            settings.mouseInteraction,
+            velocity
+          );
         }
-        
-        // Apply force for this touch
-        particleManagerRef.current.applyForce(
-          touchX,
-          touchY,
-          settings.mouseInteraction.forceType,
-          settings.mouseInteraction,
-          velocity
-        );
         
         // Update spawn position for this touch
         particleManagerRef.current.updateMouseSpawnPosition(touchX, touchY);
