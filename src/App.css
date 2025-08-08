@@ -21,7 +21,7 @@ html, body {
 }
 
 .app.light {
-  background: #f5f5f5;
+  background: #ffffff;
 }
 
 .canvas-wrapper {
@@ -69,7 +69,7 @@ html, body {
 
 /* Dark/Light mode transitions */
 .app.light {
-  background: #f5f5f5;
+  background: #ffffff;
 }
 
 .app.light .info-overlay h1 {

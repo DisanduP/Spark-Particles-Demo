@@ -79,13 +79,13 @@ export const DEFAULT_SETTINGS = {
     bloom: {
       intensity: 1.5,
       radius: 8,
-      sizeMultiplier: 5.2, // How much larger bloom quads should be (for smooth falloff)
+      sizeMultiplier: 4.4, // How much larger bloom quads should be (for smooth falloff)
       speedBased: {
         enabled: true,
         falloffDistance: 18, // Falloff distance multiplier (relative to particle size)
         colorShift: 1, // How much to reduce red tones (0 = no shift, 1 = full shift to cooler)
         minSpeedThreshold: 100, // Minimum speed to start applying bloom
-        maxIntensity: 2.3 // Maximum bloom intensity at high speeds
+        maxIntensity: 3 // Maximum bloom intensity at high speeds
       }
     },
     trails: {
@@ -112,12 +112,12 @@ export const DEFAULT_SETTINGS = {
     },
     gradients: {
       gradient1: [
-        { position: 0, color: '#6800ff' },
-        { position: 1, color: '#2500ff' }
+        { position: 0, color: '#7500ff' },
+        { position: 1, color: '#3900ff' }
       ],
       gradient2: [
-        { position: 0, color: '#53d5fd' },
-        { position: 1, color: '#4800ff' }
+        { position: 0, color: '#00fef9' },
+        { position: 1, color: '#005bfe' }
       ],
       gradient3: [
         { position: 0, color: '#3a88fe' },
@@ -136,7 +136,7 @@ export const DEFAULT_SETTINGS = {
     mode: 'dark', // 'dark' or 'light'
     backgroundColor: {
       dark: '#0a0a0a',
-      light: '#f5f5f5'
+      light: '#ffffff'
     },
     uiPanelOpacity: 0.9
   }
