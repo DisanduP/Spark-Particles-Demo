@@ -18,6 +18,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   // Mouse velocity tracking
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const mouseVelocityRef = useRef({ x: 0, y: 0, speed: 0 });
+  const isMouseInsideCanvasRef = useRef(false);
   
   // Track active touches for multi-touch support
   const activeTouchesRef = useRef(new Map());
@@ -200,27 +201,39 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     const position = getPointerPosition(event);
     const { x: pointerX, y: pointerY } = position;
 
-    // Calculate pointer velocity
-    const lastPos = lastMousePosRef.current;
-    const velocityX = pointerX - lastPos.x;
-    const velocityY = pointerY - lastPos.y;
-    const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
-    
-    // Update velocity tracking
-    mouseVelocityRef.current = { x: velocityX, y: velocityY, speed };
-    lastMousePosRef.current = { x: pointerX, y: pointerY };
+    // Only calculate velocity for mouse events, not touch events
+    // Touch events handle their own velocity calculation
+    if (event.type === 'mousemove') {
+      // Only calculate velocity if mouse was already inside canvas
+      if (isMouseInsideCanvasRef.current) {
+        const lastPos = lastMousePosRef.current;
+        const velocityX = pointerX - lastPos.x;
+        const velocityY = pointerY - lastPos.y;
+        const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+        
+        // Update velocity tracking
+        mouseVelocityRef.current = { x: velocityX, y: velocityY, speed };
+      } else {
+        // Reset velocity when mouse first enters canvas
+        mouseVelocityRef.current = { x: 0, y: 0, speed: 0 };
+        isMouseInsideCanvasRef.current = true;
+      }
+      
+      // Always update last position for next frame
+      lastMousePosRef.current = { x: pointerX, y: pointerY };
 
-    const settings = configManagerRef.current.getSettings();
-    particleManagerRef.current.applyForce(
-      pointerX, 
-      pointerY, 
-      settings.mouseInteraction.forceType,
-      settings.mouseInteraction,
-      mouseVelocityRef.current
-    );
+      const settings = configManagerRef.current.getSettings();
+      particleManagerRef.current.applyForce(
+        pointerX, 
+        pointerY, 
+        settings.mouseInteraction.forceType,
+        settings.mouseInteraction,
+        mouseVelocityRef.current
+      );
 
-    // Update spawn position if actively spawning
-    particleManagerRef.current.updateMouseSpawnPosition(pointerX, pointerY);
+      // Update spawn position if actively spawning
+      particleManagerRef.current.updateMouseSpawnPosition(pointerX, pointerY);
+    }
   };
 
   // Unified pointer down handler for both mouse and touch
@@ -234,6 +247,13 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
 
     const position = getPointerPosition(event);
     const { x: pointerX, y: pointerY } = position;
+
+    // For mouse events, ensure we're tracking properly
+    if (event.type === 'mousedown') {
+      isMouseInsideCanvasRef.current = true;
+      lastMousePosRef.current = { x: pointerX, y: pointerY };
+      mouseVelocityRef.current = { x: 0, y: 0, speed: 0 };
+    }
 
     // Start continuous spawning at pointer position
     particleManagerRef.current.startMouseSpawning(pointerX, pointerY);
@@ -257,6 +277,16 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     
     // Stop spawning when mouse leaves canvas
     particleManagerRef.current.stopMouseSpawning();
+    
+    // Reset mouse tracking state
+    isMouseInsideCanvasRef.current = false;
+    mouseVelocityRef.current = { x: 0, y: 0, speed: 0 };
+  };
+
+  const handleMouseEnter = (event) => {
+    // Reset velocity when mouse enters canvas to prevent large velocity jumps
+    mouseVelocityRef.current = { x: 0, y: 0, speed: 0 };
+    isMouseInsideCanvasRef.current = false; // Will be set to true on first move
   };
 
   // Touch event handlers with multi-touch support
@@ -274,12 +304,13 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
       const touchX = touch.clientX - rect.left;
       const touchY = touch.clientY - rect.top;
       
-      // Store touch data
+      // Store touch data with initial velocity of zero
       activeTouchesRef.current.set(touch.identifier, {
         x: touchX,
         y: touchY,
         lastX: touchX,
-        lastY: touchY
+        lastY: touchY,
+        isFirstMove: true // Flag to skip velocity calculation on first move
       });
       
       // Start spawning at touch position
@@ -306,13 +337,15 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
         
-        // Calculate touch velocity
-        const velocityX = touchX - touchData.lastX;
-        const velocityY = touchY - touchData.lastY;
-        const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+        // Calculate touch velocity, but skip on first move to prevent large jumps
+        let velocity = { x: 0, y: 0, speed: 0 };
         
-        // Update velocity tracking
-        const velocity = { x: velocityX, y: velocityY, speed };
+        if (!touchData.isFirstMove) {
+          const velocityX = touchX - touchData.lastX;
+          const velocityY = touchY - touchData.lastY;
+          const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+          velocity = { x: velocityX, y: velocityY, speed };
+        }
         
         // Apply force for this touch
         particleManagerRef.current.applyForce(
@@ -331,6 +364,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         touchData.lastY = touchY;
         touchData.x = touchX;
         touchData.y = touchY;
+        touchData.isFirstMove = false;
       }
     }
   };
@@ -457,6 +491,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
+        onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
