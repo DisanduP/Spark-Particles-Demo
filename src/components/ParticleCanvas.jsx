@@ -260,7 +260,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   };
 
   // Unified pointer up handler for both mouse and touch
-  const handlePointerUp = (event) => {
+  const handlePointerUp = () => {
     if (!particleManagerRef.current) return;
     
     // Stop continuous spawning
@@ -270,9 +270,9 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
   // Mouse event handlers (delegating to unified handlers)
   const handleMouseMove = (event) => handlePointerMove(event);
   const handleMouseDown = (event) => handlePointerDown(event);
-  const handleMouseUp = (event) => handlePointerUp(event);
+  const handleMouseUp = () => handlePointerUp();
 
-  const handleMouseLeave = (event) => {
+  const handleMouseLeave = () => {
     if (!particleManagerRef.current) return;
     
     // Stop spawning when mouse leaves canvas
@@ -283,7 +283,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     mouseVelocityRef.current = { x: 0, y: 0, speed: 0 };
   };
 
-  const handleMouseEnter = (event) => {
+  const handleMouseEnter = () => {
     // Reset velocity when mouse enters canvas to prevent large velocity jumps
     mouseVelocityRef.current = { x: 0, y: 0, speed: 0 };
     isMouseInsideCanvasRef.current = false; // Will be set to true on first move

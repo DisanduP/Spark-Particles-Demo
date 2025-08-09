@@ -47,28 +47,24 @@ src/
 │   ├── ParticleSystem/
 │   │   ├── WebGLRenderer.js
 │   │   ├── ParticleManager.js
-│   │   ├── PhysicsEngine.js
+│   │   ├── Particle.js
 │   │   └── PerlinNoise.js
 │   ├── UI/
-│   │   ├── ControlPanel.js
-│   │   ├── ThemeToggle.js
-│   │   └── ConfigExporter.js
-│   ├── Forces/
-│   │   ├── BaseForce.js
-│   │   ├── RadialForce.js
-│   │   └── ForceManager.js
-│   ├── Visual/
-│   │   ├── SparkleParticle.js
-│   │   ├── PostEffects.js
-│   │   └── TrailRenderer.js
+│   │   ├── ControlPanel.jsx
+│   │   ├── ControlHeader.jsx
+│   │   ├── ControlSection.jsx
+│   │   ├── ConfigManagement.jsx
+│   │   ├── GradientEditor.jsx
+│   │   └── OpacityGradientEditor.jsx
 │   └── Config/
 │       ├── DefaultSettings.js
 │       └── ConfigManager.js
+├── utils/
+│   ├── gradientUtils.js
+│   └── shaderLoader.js
 ├── shaders/
 │   ├── particle.vert
-│   ├── particle.frag
-│   ├── bloom.vert
-│   └── bloom.frag
+│   └── particle.frag
 └── assets/
     └── sparkle.svg
 ```
