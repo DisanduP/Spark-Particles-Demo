@@ -28,7 +28,7 @@ npm run dev
 #### Control Panel
 The right-side control panel allows real-time adjustment of:
 
-- **Particle Behavior**: Spawn rate, lifetime, upward force
+- **Particle Behavior**: Spawn rate (with separate mobile settings), lifetime, upward force
 - **Child Spawning**: Probability, force multipliers, spawn limits
 - **Perlin Noise**: Scale, strength, speed, complexity
 - **Mouse Interaction**: Force type (Radial Push, Suction, Directional, Sweep), strength, radius, falloff
@@ -43,3 +43,12 @@ The right-side control panel allows real-time adjustment of:
 - **Follow**: Particles follow behind cursor/finger movement
 - **Boids**: Flocking behavior influenced by cursor/finger position
 
+#### Mobile Optimization
+The system automatically detects mobile devices and applies optimized settings:
+
+- **Mobile Spawn Rate**: Separate spawn rate setting for mobile devices to ensure smooth performance
+- **Device Detection**: Automatically switches between desktop and mobile spawn rates
+- **Touch Support**: Full multi-touch support with gesture-based interactions
+- **Performance**: Optimized particle counts and effects for mobile hardware
+
+You can adjust the mobile spawn rate independently from the desktop spawn rate in the control panel. The current device type and active spawn rate are displayed in the Particle Behavior section.

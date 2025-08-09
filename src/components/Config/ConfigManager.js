@@ -120,6 +120,11 @@ export class ConfigManager {
       }
     }
 
+    // Check for optional mobile spawn rate - if missing, set it to regular spawn rate
+    if (this.getSetting('particles.mobileSpawnRate') === undefined) {
+      this.setSetting('particles.mobileSpawnRate', this.getSetting('particles.spawnRate'));
+    }
+
     return true;
   }
 }

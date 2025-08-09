@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Detection Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #1a1a1a;
+      color: white;
+    }
+    .test-result {
+      background: #2a2a2a;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #00ff88;
+    }
+    .device-mobile { border-left-color: #ff6b00; }
+    .device-desktop { border-left-color: #0066ff; }
+    .spawn-rate-info {
+      background: #3a3a3a;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mobile Detection Test</h1>
+  <p>This page tests the mobile detection functionality for the particle system.</p>
+  
+  <div id="test-results"></div>
+  
+  <div class="test-result">
+    <h3>How to Test:</h3>
+    <ol>
+      <li>Open this page on different devices (desktop, tablet, mobile)</li>
+      <li>Check the device detection results above</li>
+      <li>Verify spawn rates are appropriate for each device type</li>
+      <li>Test on the main particle system to see the effect</li>
+    </ol>
+  </div>
+
+  <script type="module">
+    // Simple mobile detection function (copied from our utility)
+    const isMobileDevice = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+      const screenWidth = window.screen.width;
+      const isSmallScreen = screenWidth < 768;
+      const hasTouchCapability = 'ontouchstart' in window || 
+                               navigator.maxTouchPoints > 0 || 
+                               navigator.msMaxTouchPoints > 0;
+      const isMobileUA = mobileRegex.test(userAgent);
+      return isMobileUA || (isSmallScreen && hasTouchCapability);
+    };
+
+    const getDeviceType = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const screenWidth = window.screen.width;
+      
+      if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+        return 'mobile';
+      }
+      
+      if (/ipad|android/i.test(userAgent) && screenWidth >= 768) {
+        return 'tablet';
+      }
+      
+      if (screenWidth < 768) {
+        return 'mobile';
+      } else if (screenWidth < 1024) {
+        return 'tablet';
+      }
+      
+      return 'desktop';
+    };
+
+    // Test results
+    const isMobile = isMobileDevice();
+    const deviceType = getDeviceType();
+    const hasTouch = 'ontouchstart' in window;
+    
+    // Spawn rates (matching default settings)
+    const desktopSpawnRate = 23;
+    const mobileSpawnRate = 15;
+    const activeSpawnRate = isMobile ? mobileSpawnRate : desktopSpawnRate;
+
+    const resultsContainer = document.getElementById('test-results');
+    
+    resultsContainer.innerHTML = `
+      <div class="test-result ${isMobile ? 'device-mobile' : 'device-desktop'}">
+        <h3>Device Detection Results</h3>
+        <p><strong>Is Mobile:</strong> ${isMobile ? 'Yes' : 'No'}</p>
+        <p><strong>Device Type:</strong> ${deviceType}</p>
+        <p><strong>Has Touch:</strong> ${hasTouch ? 'Yes' : 'No'}</p>
+        <p><strong>Screen Size:</strong> ${window.screen.width}x${window.screen.height}</p>
+        <p><strong>Viewport Size:</strong> ${window.innerWidth}x${window.innerHeight}</p>
+        <p><strong>Max Touch Points:</strong> ${navigator.maxTouchPoints || 0}</p>
+      </div>
+      
+      <div class="test-result">
+        <h3>Spawn Rate Settings</h3>
+        <div class="spawn-rate-info">
+          <strong>Desktop Spawn Rate:</strong> ${desktopSpawnRate} particles/second
+        </div>
+        <div class="spawn-rate-info">
+          <strong>Mobile Spawn Rate:</strong> ${mobileSpawnRate} particles/second
+        </div>
+        <div class="spawn-rate-info" style="background: ${isMobile ? '#ff6b00' : '#0066ff'}22; border: 1px solid ${isMobile ? '#ff6b00' : '#0066ff'};">
+          <strong>Active Spawn Rate:</strong> ${activeSpawnRate} particles/second (${isMobile ? 'Mobile' : 'Desktop'} mode)
+        </div>
+      </div>
+      
+      <div class="test-result">
+        <h3>User Agent</h3>
+        <p style="font-size: 0.8em; word-break: break-all;">${navigator.userAgent}</p>
+      </div>
+    `;
+
+    // Update on resize
+    window.addEventListener('resize', () => {
+      setTimeout(() => {
+        location.reload();
+      }, 100);
+    });
+  </script>
+</body>
+</html>
