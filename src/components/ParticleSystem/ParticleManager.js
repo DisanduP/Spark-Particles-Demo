@@ -1,6 +1,5 @@
 import { Particle } from './Particle.js';
 import { PerlinNoise } from './PerlinNoise.js';
-import { isMobileDevice } from '../../utils/mobileDetection.js';
 
 export class ParticleManager {
   constructor(settings) {
@@ -19,9 +18,6 @@ export class ParticleManager {
     // Canvas dimensions for boundary checking
     this.canvasWidth = 800;
     this.canvasHeight = 600;
-    
-    // Cache mobile detection result
-    this.isMobile = isMobileDevice();
   }
 
   update(deltaTime) {
@@ -45,11 +41,14 @@ export class ParticleManager {
   }
 
   spawnParticles() {
-    // Use mobile spawn rate if on mobile, otherwise use regular spawn rate
-    const effectiveSpawnRate = this.isMobile && this.settings.particles.mobileSpawnRate !== undefined
-      ? this.settings.particles.mobileSpawnRate
-      : this.settings.particles.spawnRate;
-      
+    // Calculate spawn rate based on canvas width
+    // Base ratio: 25 particles/second for 1200px width
+    const baseRatio = 25 / 1200; // particles per second per pixel width
+    const baseSpawnRate = this.canvasWidth * baseRatio;
+    
+    // Apply the UI spawn rate setting as a multiplier
+    const effectiveSpawnRate = baseSpawnRate * this.settings.particles.spawnRate;
+    
     const spawnInterval = 1.0 / effectiveSpawnRate;
     
     while (this.timeAccumulator >= spawnInterval && 
@@ -467,8 +466,6 @@ export class ParticleManager {
   updateSettings(newSettings) {
     this.settings = newSettings;
     this.perlinNoise.updateSettings(newSettings);
-    // Update mobile detection when settings change (in case viewport changed)
-    this.isMobile = isMobileDevice();
   }
 
   startMouseSpawning(mouseX, mouseY) {

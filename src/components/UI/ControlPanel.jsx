@@ -126,14 +126,14 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
           />
 
           <SliderInput
-            label="Spawn Rate"
+            label="Spawn Rate Multiplier"
             value={settings.particles.spawnRate}
-            min={1}
-            max={200}
-            step={1}
+            min={0.1}
+            max={5.0}
+            step={0.1}
             path="particles.spawnRate"
             onChange={handleSliderChange}
-            formatDisplay={(val) => `${val}/s`}
+            formatDisplay={(val) => `${val.toFixed(1)}x (${Math.round(val * 25)}p/s@1200px)`}
           />
 
           <SliderInput

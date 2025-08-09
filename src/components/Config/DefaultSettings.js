@@ -3,8 +3,7 @@ export const DEFAULT_SETTINGS = {
   
   particles: {
     maxCount: 5000,
-    spawnRate: 23, // particles per second (desktop)
-    mobileSpawnRate: 15, // particles per second for mobile devices (automatically used when mobile detected)
+    spawnRate: 1.0, // multiplier of base ratio (25 particles/second per 1200px width)
     lifetime: {
       min: 8.1,
       max: 15

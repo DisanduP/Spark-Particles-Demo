@@ -30,7 +30,8 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
     shaderMode: 'Files',
     particleCount: 0,
     maxParticles: 1000,
-    fps: 60
+    fps: 60,
+    effectiveSpawnRate: 25
   });
 
   useEffect(() => {
@@ -138,13 +139,20 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         
         const particles = particleManagerRef.current.getParticles();
         
+        // Calculate effective spawn rate for display
+        const canvasWidth = canvasRef.current?.width || 1200;
+        const baseRatio = 25 / 1200; // particles per second per pixel width
+        const baseSpawnRate = canvasWidth * baseRatio;
+        const effectiveSpawnRate = baseSpawnRate * settings.particles.spawnRate;
+        
         // Update status info
         setStatusInfo({
           renderer: rendererRef.current.instancedArraysExt ? 'WebGL (Instanced)' : 'WebGL (Basic)',
           shaderMode: settings.visual?.useTexture ? 'Files + Texture' : 'Files + Math',
           particleCount: particles.length,
           maxParticles: settings.particles.maxCount,
-          fps: fpsRef.current
+          fps: fpsRef.current,
+          effectiveSpawnRate: Math.round(effectiveSpawnRate * 10) / 10 // round to 1 decimal
         });
         
         // Render
@@ -566,6 +574,7 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         <div>Renderer: {statusInfo.renderer}</div>
         <div>Shaders: {statusInfo.shaderMode}</div>
         <div>Particles: {statusInfo.particleCount} / {statusInfo.maxParticles}</div>
+        <div>Spawn Rate: {statusInfo.effectiveSpawnRate}/s</div>
         <div>FPS: {statusInfo.fps}</div>
       </div>
     </div>
