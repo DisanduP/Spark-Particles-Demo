@@ -245,7 +245,7 @@ export class WebGLRenderer {
     const gl = this.gl;
     const particleCount = particles.length;
     
-    if (particleCount === 0) return;
+    if (particleCount === 0 || !this.buffers.particlePos) return;
     
     // Prepare data arrays
     const positions = new Float32Array(particleCount * 2);

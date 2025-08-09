@@ -11,7 +11,7 @@ import { isMobileDevice } from '../../utils/mobileDetection.js';
 
 // Reusable component for slider with text input
 const SliderInput = ({ label, value, min, max, step, path, onChange, formatDisplay }) => {
-  const [textValue, setTextValue] = useState(value.toString());
+  const [textValue, setTextValue] = useState(value?.toString() || '0');
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSliderChange = (e) => {
@@ -31,7 +31,7 @@ const SliderInput = ({ label, value, min, max, step, path, onChange, formatDispl
         onChange(path, numValue);
       } else {
         // Reset to current value if invalid
-        setTextValue(value.toString());
+        setTextValue(value?.toString() || '0');
       }
       setIsEditing(false);
     }
@@ -43,12 +43,17 @@ const SliderInput = ({ label, value, min, max, step, path, onChange, formatDispl
 
   // Update text value when prop value changes (from external sources)
   React.useEffect(() => {
-    if (!isEditing) {
+    if (!isEditing && value !== undefined) {
       setTextValue(value.toString());
     }
   }, [value, isEditing]);
 
   const displayValue = formatDisplay ? formatDisplay(value) : value;
+
+  // Guard against undefined values
+  if (value === undefined || value === null) {
+    return null;
+  }
 
   return (
     <div className="control-group">
@@ -70,7 +75,7 @@ const SliderInput = ({ label, value, min, max, step, path, onChange, formatDispl
         min={min}
         max={max}
         step={step}
-        value={Math.min(Math.max(value, min), max)} // Clamp to slider range for display
+        value={Math.min(Math.max(value || 0, min), max)} // Clamp to slider range for display and handle undefined
         onChange={handleSliderChange}
       />
     </div>
