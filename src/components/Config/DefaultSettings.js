@@ -3,7 +3,7 @@ export const DEFAULT_SETTINGS = {
   
   particles: {
     maxCount: 5000,
-    spawnRate: 1.0, // multiplier of base ratio (25 particles/second per 1200px width)
+    spawnRate: 1, // multiplier of base ratio (25 particles/second per 1200px width)
     lifetime: {
       min: 8.1,
       max: 15
@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS = {
       speed: 2,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 1.95,
+    upwardForce: 1.66,
     drag: 1.7, // Global friction (velocity decay rate per second). 0 = none, higher = stops faster
     spawnArea: {
       x: { min: 0, max: 1 }, // percentage of screen width
@@ -112,16 +112,19 @@ export const DEFAULT_SETTINGS = {
     },
     gradients: {
       gradient1: [
-        { position: 0, color: '#7500ff' },
-        { position: 1, color: '#3900ff' }
+        { position: 0, color: '#a173f6' },
+        { position: 0.52, color: '#7b3eed' },
+        { position: 0.93, color: '#5a00ff' }
       ],
       gradient2: [
-        { position: 0, color: '#00fef9' },
-        { position: 1, color: '#005bfe' }
+        { position: 0, color: '#5fed83' },
+        { position: 0.29, color: '#005bfe' },
+        { position: 0.12, color: '#00b6bb' },
+        { position: 0.99, color: '#5a00ff' }
       ],
       gradient3: [
-        { position: 0, color: '#3a88fe' },
-        { position: 1, color: '#002e7a' }
+        { position: 0, color: '#0077ff' },
+        { position: 1, color: '#0000ff' }
       ]
     },
     opacityGradient: [
