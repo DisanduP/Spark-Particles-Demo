@@ -43,12 +43,11 @@ The right-side control panel allows real-time adjustment of:
 - **Follow**: Particles follow behind cursor/finger movement
 - **Boids**: Flocking behavior influenced by cursor/finger position
 
-#### Mobile Optimization
-The system automatically detects mobile devices and applies optimized settings:
+#### Device Optimization
+The system is optimized for various devices and screen sizes:
 
-- **Mobile Spawn Rate**: Separate spawn rate setting for mobile devices to ensure smooth performance
-- **Device Detection**: Automatically switches between desktop and mobile spawn rates
 - **Touch Support**: Full multi-touch support with gesture-based interactions
-- **Performance**: Optimized particle counts and effects for mobile hardware
+- **Responsive Design**: Optimized for different screen sizes and device capabilities
+- **Performance**: Adjustable settings to optimize for different hardware capabilities
 
-You can adjust the mobile spawn rate independently from the desktop spawn rate in the control panel. The current device type and active spawn rate are displayed in the Particle Behavior section.
+You can adjust the spawn rate and other settings in the control panel to optimize performance for your specific device.

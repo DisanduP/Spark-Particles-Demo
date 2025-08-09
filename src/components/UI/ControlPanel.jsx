@@ -5,7 +5,6 @@ import { ControlHeader } from './ControlHeader.jsx';
 import { ControlSection } from './ControlSection.jsx';
 import GradientEditor from './GradientEditor.jsx';
 import OpacityGradientEditor from './OpacityGradientEditor.jsx';
-import { isMobileDevice } from '../../utils/mobileDetection.js';
 
 // Reusable component for slider input with direct text editing
 
@@ -140,32 +139,6 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
             onChange={handleSliderChange}
             formatDisplay={(val) => `${val.toFixed(1)}x (${Math.round(val * 25)}p/s@1200px)`}
           />
-
-          <SliderInput
-            label="Mobile Spawn Rate"
-            value={settings.particles.mobileSpawnRate}
-            min={1}
-            max={200}
-            step={1}
-            path="particles.mobileSpawnRate"
-            onChange={handleSliderChange}
-            formatDisplay={(val) => `${val}/s (mobile only)`}
-          />
-
-          {/* Device Status Indicator */}
-          <div style={{ 
-            marginTop: '10px', 
-            padding: '8px 12px', 
-            background: settings.theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', 
-            borderRadius: '4px',
-            fontSize: '12px',
-            textAlign: 'center'
-          }}>
-            <strong>Current Device:</strong> {isMobileDevice() ? 'Mobile' : 'Desktop'}<br/>
-            <span style={{ opacity: 0.8 }}>
-              Active spawn rate: {isMobileDevice() ? settings.particles.mobileSpawnRate : settings.particles.spawnRate}/s
-            </span>
-          </div>
 
           <SliderInput
             label="Lifetime Min"
