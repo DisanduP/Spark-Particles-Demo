@@ -38,6 +38,17 @@ vec3 coolColor(vec3 color, float amount) {
   return cooled;
 }
 
+// Simple tone mapping to prevent HDR blowout
+vec3 toneMap(vec3 color) {
+  // ACES tone mapping approximation - prevents any color from exceeding 1.0
+  const float a = 2.51;
+  const float b = 0.03;
+  const float c = 2.43;
+  const float d = 0.59;
+  const float e = 0.14;
+  return clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0, 1.0);
+}
+
 // Create bloom effect with smooth falloff for larger quads
 float bloomEffectLarge(vec2 uv, float falloffDistance, float intensity) {
   vec2 center = uv - 0.5;
@@ -69,7 +80,16 @@ void main() {
       vec3 bloomColor = coolColor(v_color, u_bloomSettings.y);
       
       // Use additive blending for bloom effect
-      gl_FragColor = vec4(bloomColor * bloom * 0.4, bloom * 0.2);
+      vec3 finalBloomColor = bloomColor * bloom * 0.4;
+      float finalBloomAlpha = bloom * 0.2;
+      
+      // Apply tone mapping and reduce intensity in light mode to prevent HDR blowout
+      if (!u_isDarkMode) {
+        finalBloomColor = toneMap(finalBloomColor * 0.5);
+        finalBloomAlpha = finalBloomAlpha * 0.5;
+      }
+      
+      gl_FragColor = vec4(finalBloomColor, finalBloomAlpha);
     } else {
       discard; // Don't render particles without bloom in bloom pass
     }
@@ -104,6 +124,12 @@ void main() {
   
   // Use per-particle glow intensity combined with global glow intensity
   float totalGlowIntensity = u_glowIntensity + v_glowIntensity;
+  
+  // Reduce glow intensity in light mode to prevent blowout
+  if (!u_isDarkMode) {
+    totalGlowIntensity = totalGlowIntensity * 0.6;
+  }
+  
   color += vec3(totalGlowIntensity * 0.3) * shape;
   
   // Apply trail effect if enabled (this would be better handled in a separate render pass)
@@ -112,6 +138,14 @@ void main() {
     // Here we just apply the color cooling for trail segments
     vec3 trailColor = coolColor(v_color, u_trailSettings.x);
     color = mix(color, trailColor, v_trailLength * 0.1);
+  }
+  
+  // Apply tone mapping in light mode to prevent HDR blowout
+  if (!u_isDarkMode) {
+    color = toneMap(color);
+  } else {
+    // Simple clamp in dark mode to preserve HDR while preventing extreme values
+    color = clamp(color, 0.0, 2.0);
   }
   
   gl_FragColor = vec4(color, finalAlpha);

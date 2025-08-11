@@ -3,7 +3,22 @@ import { hexToRgb } from '../../utils/gradientUtils.js';
 export class WebGLRenderer {
   constructor(canvas) {
     this.canvas = canvas;
-    this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    
+    // Create WebGL context with specific attributes to control HDR behavior
+    const contextAttributes = {
+      alpha: true,
+      depth: false,
+      stencil: false,
+      antialias: true,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: false,
+      powerPreference: 'default',
+      // Explicitly request standard color space to prevent HDR behavior
+      colorSpace: 'srgb'
+    };
+    
+    this.gl = canvas.getContext('webgl', contextAttributes) || 
+              canvas.getContext('experimental-webgl', contextAttributes);
     
     if (!this.gl) {
       throw new Error('WebGL not supported');
@@ -419,7 +434,7 @@ export class WebGLRenderer {
     // PASS 1: Render bloom effects (larger quads, additive blending) - ONLY main particles
     const bloomEnabled = settings.visual.bloom.speedBased.enabled;
     if (bloomEnabled) {
-      // Enable additive blending for bloom
+      // Enable additive blending for bloom effects in both modes
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
       
       // Set bloom pass uniforms
