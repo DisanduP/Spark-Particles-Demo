@@ -478,6 +478,57 @@ export class ParticleManager {
     this.mouseSpawnActive = false;
   }
 
+  // Apply repelling force for the sparkle overlay area
+  applyOverlayRepulsion(overlayBounds, repulsionSettings) {
+    if (!repulsionSettings.enabled) return;
+    
+    const { forceMultiplier, paddingPixels, falloffCurve } = repulsionSettings;
+    
+    // Calculate repulsion area with padding
+    const repulsionArea = {
+      left: overlayBounds.left - paddingPixels,
+      right: overlayBounds.right + paddingPixels,
+      top: overlayBounds.top - paddingPixels,
+      bottom: overlayBounds.bottom + paddingPixels
+    };
+    
+    // Calculate center of the repulsion area
+    const centerX = (repulsionArea.left + repulsionArea.right) / 2;
+    const centerY = (repulsionArea.top + repulsionArea.bottom) / 2;
+    
+    // Calculate the maximum distance from center to edge (for force falloff)
+    const maxRadius = Math.max(
+      Math.abs(repulsionArea.right - centerX),
+      Math.abs(repulsionArea.bottom - centerY)
+    );
+
+    for (const particle of this.particles) {
+      // Check if particle is inside the repulsion area
+      if (particle.x >= repulsionArea.left && particle.x <= repulsionArea.right &&
+          particle.y >= repulsionArea.top && particle.y <= repulsionArea.bottom) {
+        
+        // Calculate distance from center
+        const dx = particle.x - centerX;
+        const dy = particle.y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+          // Calculate force with falloff (stronger at center, weaker at edges)
+          const normalizedDistance = Math.min(distance / maxRadius, 1.0);
+          const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+          const forceMagnitude = forceMultiplier * falloff;
+          
+          // Apply radial force (push away from center)
+          const forceX = (dx / distance) * forceMagnitude;
+          const forceY = (dy / distance) * forceMagnitude;
+          
+          // Apply the force to the particle (scaled down for smooth movement)
+          particle.applyForce(forceX * 0.02, forceY * 0.02);
+        }
+      }
+    }
+  }
+
   updateMouseSpawnPosition(mouseX, mouseY) {
     if (this.mouseSpawnActive) {
       this.mouseSpawnPosition = { x: mouseX, y: mouseY };

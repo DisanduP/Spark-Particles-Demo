@@ -137,6 +137,29 @@ export const ParticleCanvas = ({ onSettingsChange, onReady, settings }) => {
         // Update particles
         particleManagerRef.current.update(clampedDelta, currentTime / 1000);
         
+        // Apply overlay repulsion force
+        if (settings.overlayRepulsion?.enabled) {
+          // Calculate overlay bounds (sparkle overlay content area is centered)
+          const canvas = canvasRef.current;
+          if (canvas) {
+            // Create a centered rectangular area for the sparkle overlay content
+            // The content is much smaller than the full canvas
+            const contentWidth = 200; // Approximate width of the sparkle + text
+            const contentHeight = 80;  // Approximate height of the sparkle + text
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            const overlayBounds = {
+              left: centerX - contentWidth / 2,
+              right: centerX + contentWidth / 2,
+              top: centerY - contentHeight / 2,
+              bottom: centerY + contentHeight / 2
+            };
+            
+            particleManagerRef.current.applyOverlayRepulsion(overlayBounds, settings.overlayRepulsion);
+          }
+        }
+        
         const particles = particleManagerRef.current.getParticles();
         
         // Calculate effective spawn rate for display

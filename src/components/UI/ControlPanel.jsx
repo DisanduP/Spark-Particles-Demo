@@ -565,6 +565,57 @@ export const ControlPanel = ({ settings, onSettingChange, configManager }) => {
           )}
         </ControlSection>
 
+        {/* Overlay Repulsion */}
+        <ControlSection title="Overlay Repulsion">
+          <div className="control-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={settings.overlayRepulsion?.enabled ?? true}
+                onChange={(e) => onSettingChange('overlayRepulsion.enabled', e.target.checked)}
+              />
+              Enable Text Area Repulsion
+            </label>
+          </div>
+
+          {settings.overlayRepulsion?.enabled && (
+            <>
+              <SliderInput
+                label="Force Multiplier"
+                value={settings.overlayRepulsion?.forceMultiplier ?? 1.0}
+                min={0}
+                max={5}
+                step={0.1}
+                path="overlayRepulsion.forceMultiplier"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+
+              <SliderInput
+                label="Padding (pixels)"
+                value={settings.overlayRepulsion?.paddingPixels ?? 20}
+                min={0}
+                max={100}
+                step={5}
+                path="overlayRepulsion.paddingPixels"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => `${val}px`}
+              />
+
+              <SliderInput
+                label="Falloff Curve"
+                value={settings.overlayRepulsion?.falloffCurve ?? 2}
+                min={0.5}
+                max={5}
+                step={0.1}
+                path="overlayRepulsion.falloffCurve"
+                onChange={handleSliderChange}
+                formatDisplay={(val) => val.toFixed(1)}
+              />
+            </>
+          )}
+        </ControlSection>
+
         {/* Visual Effects */}
         <ControlSection title="Visual Effects">
           

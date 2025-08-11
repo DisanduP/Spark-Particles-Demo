@@ -32,8 +32,16 @@ The right-side control panel allows real-time adjustment of:
 - **Child Spawning**: Probability, force multipliers, spawn limits
 - **Perlin Noise**: Scale, strength, speed, complexity
 - **Mouse Interaction**: Force type (Radial Push, Suction, Directional, Sweep), strength, radius, falloff
+- **Overlay Repulsion**: Keep particles away from loading text/animation area
 - **Visual Effects**: Glow intensity, bloom effects
 - **Configuration**: Export/import settings, reset to defaults
+
+#### Overlay Repulsion
+The overlay repulsion feature creates a clear area around loading animations and text by pushing particles away from a specified rectangular region:
+
+- **Force Multiplier**: Controls the strength of the repelling force
+- **Padding**: Adds extra space around the overlay area in pixels
+- **Falloff Curve**: Adjusts how quickly the force diminishes from the center
 
 #### Force Types (Mouse & Touch)
 - **Radial Push**: Pushes particles away from cursor/finger position

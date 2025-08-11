@@ -2,7 +2,7 @@ export const DEFAULT_SETTINGS = {
   version: "1.0",
   
   particles: {
-    maxCount: 5000,
+    maxCount: 2000,
     spawnRate: 1, // multiplier of base ratio (25 particles/second per 1200px width)
     lifetime: {
       min: 8.1,
@@ -48,7 +48,7 @@ export const DEFAULT_SETTINGS = {
     strength: 282,
     radius: 207,
     falloffCurve: 2,
-    clickSpawnCount: 50,
+    clickSpawnCount: 120,
     sweep: {
       speedMultiplier: 8,  // How much mouse speed affects force strength
       directionalSpread: 0.8 // How focused the directional force is (0 = tight beam, 1 = wide spread)
@@ -133,6 +133,13 @@ export const DEFAULT_SETTINGS = {
       { position: 0.4, opacity: 1 },
       { position: 1, opacity: 0 }
     ]
+  },
+
+  overlayRepulsion: {
+    enabled: true,
+    forceMultiplier: 5,   // Strength of the repelling force
+    paddingPixels: 85,    // Extra padding around the overlay area in pixels
+    falloffCurve: 2       // How quickly force falls off from center (higher = sharper falloff)
   },
 
   theme: {
