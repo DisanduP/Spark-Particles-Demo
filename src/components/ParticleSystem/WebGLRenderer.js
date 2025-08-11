@@ -346,7 +346,13 @@ export class WebGLRenderer {
     gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
     gl.uniformMatrix3fv(this.uniforms.transform, false, [1, 0, 0, 0, 1, 0, 0, 0, 1]);
     gl.uniform3f(this.uniforms.color, 1.0, 0.8, 0.3); // Default ember color
-    gl.uniform1f(this.uniforms.glowIntensity, settings.visual.glow.intensity);
+    
+    // Adjust glow intensity based on theme mode
+    const glowIntensity = settings.theme.mode === 'dark' 
+      ? settings.visual.glow.intensity 
+      : Math.min(settings.visual.glow.intensity, 0.3);
+    gl.uniform1f(this.uniforms.glowIntensity, glowIntensity);
+    
     gl.uniform1i(this.uniforms.isDarkMode, settings.theme.mode === 'dark' ? 1 : 0);
     
     // Set bloom settings [falloffDistance, colorShift, enabled]
