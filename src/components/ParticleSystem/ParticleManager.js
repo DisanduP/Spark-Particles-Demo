@@ -484,43 +484,41 @@ export class ParticleManager {
     
     const { forceMultiplier, paddingPixels, falloffCurve } = repulsionSettings;
     
-    // Calculate repulsion area with padding
-    const repulsionArea = {
-      left: overlayBounds.left - paddingPixels,
-      right: overlayBounds.right + paddingPixels,
-      top: overlayBounds.top - paddingPixels,
-      bottom: overlayBounds.bottom + paddingPixels
-    };
+    // Calculate ellipse parameters with padding
+    const centerX = (overlayBounds.left + overlayBounds.right) / 2;
+    const centerY = (overlayBounds.top + overlayBounds.bottom) / 2;
     
-    // Calculate center of the repulsion area
-    const centerX = (repulsionArea.left + repulsionArea.right) / 2;
-    const centerY = (repulsionArea.top + repulsionArea.bottom) / 2;
+    // Add padding to the ellipse radii
+    const ellipseRadiusX = (overlayBounds.right - overlayBounds.left) / 2 + paddingPixels;
+    const ellipseRadiusY = (overlayBounds.bottom - overlayBounds.top) / 2 + paddingPixels;
     
-    // Calculate the maximum distance from center to edge (for force falloff)
-    const maxRadius = Math.max(
-      Math.abs(repulsionArea.right - centerX),
-      Math.abs(repulsionArea.bottom - centerY)
-    );
+    // Use the larger radius for normalization to ensure smooth falloff
+    const maxRadius = Math.max(ellipseRadiusX, ellipseRadiusY);
 
     for (const particle of this.particles) {
-      // Check if particle is inside the repulsion area
-      if (particle.x >= repulsionArea.left && particle.x <= repulsionArea.right &&
-          particle.y >= repulsionArea.top && particle.y <= repulsionArea.bottom) {
+      // Calculate normalized distance from center using ellipse equation
+      const dx = particle.x - centerX;
+      const dy = particle.y - centerY;
+      
+      // Ellipse equation: (x/a)² + (y/b)² = 1
+      // We calculate the normalized distance from the ellipse center
+      const normalizedX = dx / ellipseRadiusX;
+      const normalizedY = dy / ellipseRadiusY;
+      const ellipseDistance = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+      
+      // Only apply force if particle is inside the ellipse (distance < 1)
+      if (ellipseDistance < 1.0 && ellipseDistance > 0) {
+        // Calculate actual distance for force direction
+        const actualDistance = Math.sqrt(dx * dx + dy * dy);
         
-        // Calculate distance from center
-        const dx = particle.x - centerX;
-        const dy = particle.y - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > 0) {
+        if (actualDistance > 0) {
           // Calculate force with falloff (stronger at center, weaker at edges)
-          const normalizedDistance = Math.min(distance / maxRadius, 1.0);
-          const falloff = Math.pow(1 - normalizedDistance, falloffCurve);
+          const falloff = Math.pow(1 - ellipseDistance, falloffCurve);
           const forceMagnitude = forceMultiplier * falloff;
           
           // Apply radial force (push away from center)
-          const forceX = (dx / distance) * forceMagnitude;
-          const forceY = (dy / distance) * forceMagnitude;
+          const forceX = (dx / actualDistance) * forceMagnitude;
+          const forceY = (dy / actualDistance) * forceMagnitude;
           
           // Apply the force to the particle (scaled down for smooth movement)
           particle.applyForce(forceX * 0.02, forceY * 0.02);

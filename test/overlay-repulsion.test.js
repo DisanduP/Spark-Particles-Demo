@@ -60,8 +60,8 @@ describe('Overlay Repulsion', () => {
     expect(Math.abs(forceArgs[1])).toBeLessThan(0.001); // fy should be near 0
   });
 
-  test('should not apply force to particles outside overlay area', () => {
-    // Add a particle outside the overlay area
+  test('should not apply force to particles outside elliptical overlay area', () => {
+    // Add a particle outside the elliptical overlay area
     particleManager.particles.push({
       x: 50,  // Far left
       y: 50,  // Far top
@@ -152,5 +152,45 @@ describe('Overlay Repulsion', () => {
     // Stronger force should be approximately double
     expect(Math.abs(strongerForce[0])).toBeGreaterThan(Math.abs(normalForce[0]));
     expect(Math.abs(strongerForce[1])).toBeGreaterThan(Math.abs(normalForce[1]));
+  });
+
+  test('should use elliptical repulsion area instead of rectangular', () => {
+    // Test particle at corner of what would be rectangular area but outside ellipse
+    const overlayBounds = {
+      left: 350,
+      right: 450,  // width: 100
+      top: 275,
+      bottom: 325   // height: 50
+    };
+    
+    // Calculate ellipse parameters
+    const centerX = 400;
+    const centerY = 300;
+    const radiusX = 50 + settings.overlayRepulsion.paddingPixels; // 50 + 85 = 135
+    const radiusY = 25 + settings.overlayRepulsion.paddingPixels; // 25 + 85 = 110
+    
+    // Place particle at corner of rectangle but outside ellipse
+    const cornerX = centerX + radiusX * 0.9; // Close to ellipse edge horizontally
+    const cornerY = centerY + radiusY * 0.9; // Close to ellipse edge vertically
+    
+    // This point should be outside the ellipse despite being in rectangular bounds
+    const normalizedX = (cornerX - centerX) / radiusX;
+    const normalizedY = (cornerY - centerY) / radiusY;
+    const ellipseDistance = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+    expect(ellipseDistance).toBeGreaterThan(1.0); // Verify it's outside ellipse
+    
+    particleManager.particles.push({
+      x: cornerX,
+      y: cornerY,
+      vx: 0,
+      vy: 0,
+      applyForce: jest.fn()
+    });
+
+    // Apply overlay repulsion
+    particleManager.applyOverlayRepulsion(overlayBounds, settings.overlayRepulsion);
+
+    // Should NOT apply force since particle is outside elliptical area
+    expect(particleManager.particles[0].applyForce).not.toHaveBeenCalled();
   });
 });

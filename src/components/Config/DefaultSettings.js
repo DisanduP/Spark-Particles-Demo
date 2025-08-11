@@ -138,7 +138,7 @@ export const DEFAULT_SETTINGS = {
   overlayRepulsion: {
     enabled: true,
     forceMultiplier: 5,   // Strength of the repelling force
-    paddingPixels: 85,    // Extra padding around the overlay area in pixels
+    paddingPixels: 120,   // Extra padding around the overlay area in pixels
     falloffCurve: 2       // How quickly force falls off from center (higher = sharper falloff)
   },
 
