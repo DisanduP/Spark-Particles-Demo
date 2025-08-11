@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import ParticleCanvas from './components/ParticleCanvas';
 import ControlPanel from './components/UI/ControlPanel';
+import SparkleOverlay from './components/UI/SparkleOverlay';
 import './App.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             onReady={handleCanvasReady}
             settings={settings}
           />
+          <SparkleOverlay />
         </div>
       </div>
       
