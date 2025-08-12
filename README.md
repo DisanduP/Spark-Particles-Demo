@@ -1,5 +1,7 @@
 # Spark Particle Prototype
 
+![sparkgif](https://github.com/user-attachments/assets/0e1b76ed-6808-4aae-a20d-9cf6b847a843)
+
 A playground for building a WebGL-based particle system that simulates fire embers with interactive controls, built for prototyping and eventual integration into React applications.
 
 **Live Demo**: [https://cameronfoxly.github.io/spark-particles/](https://cameronfoxly.github.io/spark-particles/)
