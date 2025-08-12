@@ -37,3 +37,7 @@ The right-side control panel allows real-time adjustment of:
 - **Overlay Repulsion**: Keep particles away from loading text/animation area
 - **Visual Effects**: Glow intensity, bloom effects
 - **Configuration**: Export/import settings, reset to defaults
+
+
+### Deployment
+GitHub action set up to depoloy to GitHub Pages on every push to `Main`.
