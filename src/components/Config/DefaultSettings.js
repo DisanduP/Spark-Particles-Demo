@@ -3,10 +3,10 @@ export const DEFAULT_SETTINGS = {
   
   particles: {
     maxCount: 2000,
-    spawnRate: 1, // multiplier of base ratio (25 particles/second per 1200px width)
+    spawnRate: 0.8, // multiplier of base ratio (25 particles/second per 1200px width)
     lifetime: {
       min: 8.1,
-      max: 15
+      max: 24
     },
     size: {
       base: 12,        // Base/maximum size of particles
@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS = {
       speed: 2,        // Base rotation speed (radians per second)
       randomVariation: 0.8  // How much rotation speed can vary (0.0 = no variation, 1.0 = can be 0 to base speed)
     },
-    upwardForce: 1.66,
+    upwardForce: 0.76,
     drag: 1.7, // Global friction (velocity decay rate per second). 0 = none, higher = stops faster
     spawnArea: {
       x: { min: 0, max: 1 }, // percentage of screen width
@@ -128,9 +128,7 @@ export const DEFAULT_SETTINGS = {
       ]
     },
     opacityGradient: [
-      { position: 0, opacity: 0 },
-      { position: 0.01, opacity: 1 },
-      { position: 0.4, opacity: 1 },
+      { position: 0.32, opacity: 1 },
       { position: 1, opacity: 0 }
     ]
   },
